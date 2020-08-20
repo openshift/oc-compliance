@@ -193,7 +193,7 @@ func (o *FCROptions) Validate() error {
 	case "ComplianceSuites", "ComplianceSuite", "compliancesuites", "compliancesuite":
 		o.helper = NewComplianceSuiteHelper(o, objname)
 	case "ComplianceScans", "ComplianceScan", "compliancescans", "compliancescan":
-		o.helper = NewComplianceScanHelper(o, objname)
+		o.helper = NewComplianceScanHelper(o, objname, o.outputPath)
 	default:
 		return fmt.Errorf("Unkown object type: %s", rawobjtype)
 	}

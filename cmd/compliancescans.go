@@ -16,18 +16,20 @@ import (
 )
 
 type ComplianceScanHelper struct {
-	opts   *FCROptions
-	gvk    schema.GroupVersionResource
-	podgvk schema.GroupVersionResource
-	kind   string
-	name   string
+	opts       *FCROptions
+	gvk        schema.GroupVersionResource
+	podgvk     schema.GroupVersionResource
+	kind       string
+	name       string
+	outputPath string
 }
 
-func NewComplianceScanHelper(opts *FCROptions, name string) *ComplianceScanHelper {
+func NewComplianceScanHelper(opts *FCROptions, name, outputPath string) *ComplianceScanHelper {
 	return &ComplianceScanHelper{
-		opts: opts,
-		name: name,
-		kind: "ComplianceScan",
+		opts:       opts,
+		name:       name,
+		kind:       "ComplianceScan",
+		outputPath: outputPath,
 		gvk: schema.GroupVersionResource{
 			Group:    cmpAPIGroup,
 			Version:  cmpResourceVersion,
@@ -100,7 +102,7 @@ func (h *ComplianceScanHelper) Handle() error {
 	path := fmt.Sprintf("%s/%d", rawResultsMountPath, ci)
 	cpargs := []string{
 		fmt.Sprintf("%s/%s:%s", rsnamespace, podName, path),
-		h.opts.outputPath,
+		h.outputPath,
 	}
 
 	// run kubectl cp
@@ -108,7 +110,7 @@ func (h *ComplianceScanHelper) Handle() error {
 		return err
 	}
 
-	fmt.Printf("The raw compliance results are avaliable in the following directory: %s", h.opts.outputPath)
+	fmt.Printf("The raw compliance results are avaliable in the following directory: %s\n", h.outputPath)
 
 	// delete extractor pod
 	var zeroGP int64 = 0
@@ -157,7 +159,7 @@ func (h *ComplianceScanHelper) waitForExtractorPod(ns, objName string) error {
 	}
 	// retry and ignore errors until timeout
 	var lastErr error
-	fmt.Print("Fetching raw compliance results.")
+	fmt.Printf("Fetching raw compliance results for scan '%s'.", h.name)
 	timeouterr := wait.Poll(retryInterval, timeout, func() (bool, error) {
 		podlist, err := h.opts.clientset.CoreV1().Pods(ns).List(context.TODO(), opts)
 		lastErr = err
