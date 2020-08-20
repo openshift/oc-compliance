@@ -210,6 +210,8 @@ func (h *ComplianceScanHelper) Handle() error {
 		return err
 	}
 
+	fmt.Printf("The raw compliance results are avaliable in the following directory: %s", h.opts.outputPath)
+
 	var zeroGP int64 = 0
 	return h.opts.clientset.CoreV1().Pods(rsnamespace).Delete(context.TODO(), extractorPod.GetName(), metav1.DeleteOptions{
 		GracePeriodSeconds: &zeroGP,
