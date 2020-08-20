@@ -13,7 +13,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
@@ -335,16 +334,6 @@ func getPVCExtractorPod(objName, ns, claimName string) *corev1.Pod {
 			},
 		},
 	}
-}
-
-func toUnstructured(obj runtime.Object) (*unstructured.Unstructured, error) {
-	rawobj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj)
-	if err != nil {
-		return nil, fmt.Errorf("Unable to convert objext to unstructured object. This most likely is a coding error (contact the maintainer).")
-	}
-	return &unstructured.Unstructured{
-		Object: rawobj,
-	}, nil
 }
 
 func NewFCROptions(streams genericclioptions.IOStreams) *FCROptions {
