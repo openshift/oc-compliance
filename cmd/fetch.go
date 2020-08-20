@@ -28,8 +28,8 @@ const (
 	cmpResourceVersion = "v1alpha1"
 	cmdLabelKey        = "fetch-compliance-results"
 	objNameLabelKey    = "fetch-compliance-results/obj-name"
-	retryInterval      = time.Second * 5
-	timeout            = time.Minute * 15
+	retryInterval      = time.Second * 2
+	timeout            = time.Minute * 20
 
 	rawResultsMountPath = "raw-results"
 )
@@ -257,7 +257,7 @@ func (h *ComplianceScanHelper) waitForExtractorPod(ns, objName string) error {
 	}
 	// retry and ignore errors until timeout
 	var lastErr error
-	fmt.Print("Waiting for extractor pod to be ready...")
+	fmt.Print("Fetching raw compliance results.")
 	timeouterr := wait.Poll(retryInterval, timeout, func() (bool, error) {
 		podlist, err := h.opts.clientset.CoreV1().Pods(ns).List(context.TODO(), opts)
 		lastErr = err
@@ -272,12 +272,12 @@ func (h *ComplianceScanHelper) waitForExtractorPod(ns, objName string) error {
 
 		pod := podlist.Items[0]
 		if pod.Status.Phase == corev1.PodRunning || pod.Status.Phase == corev1.PodSucceeded {
-			fmt.Print("\nPod is ready!\n")
 			return true, nil
 		}
-		fmt.Print("...")
+		fmt.Print(".")
 		return false, nil
 	})
+	fmt.Print("\n")
 
 	if timeouterr != nil {
 		return fmt.Errorf("The extractor pod wasn't ready before the timeout")
