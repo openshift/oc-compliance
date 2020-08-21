@@ -180,8 +180,8 @@ func (o *FCROptions) Validate() error {
 			return fmt.Errorf("Malformed reference to object: %s", o.args[0])
 		}
 
-		rawobjtype = o.args[0]
-		objname = o.args[1]
+		rawobjtype = objref[0]
+		objname = objref[1]
 	} else {
 		rawobjtype = o.args[0]
 		objname = o.args[1]
