@@ -189,9 +189,9 @@ func (o *FCROptions) Validate() error {
 
 	switch rawobjtype {
 	case "ScanSettingBindings", "ScanSettingBinding", "scansettingbindings", "scansettingbinding":
-		o.helper = NewScanSettingBindingHelper(o, objname)
+		o.helper = NewScanSettingBindingHelper(o, objname, o.outputPath)
 	case "ComplianceSuites", "ComplianceSuite", "compliancesuites", "compliancesuite":
-		o.helper = NewComplianceSuiteHelper(o, objname)
+		o.helper = NewComplianceSuiteHelper(o, objname, o.outputPath)
 	case "ComplianceScans", "ComplianceScan", "compliancescans", "compliancescan":
 		o.helper = NewComplianceScanHelper(o, objname, o.outputPath)
 	default:

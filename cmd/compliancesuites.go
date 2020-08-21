@@ -13,17 +13,19 @@ import (
 )
 
 type ComplianceSuiteHelper struct {
-	opts *FCROptions
-	gvk  schema.GroupVersionResource
-	name string
-	kind string
+	opts       *FCROptions
+	gvk        schema.GroupVersionResource
+	name       string
+	kind       string
+	outputPath string
 }
 
-func NewComplianceSuiteHelper(opts *FCROptions, name string) *ComplianceSuiteHelper {
+func NewComplianceSuiteHelper(opts *FCROptions, name, outputPath string) *ComplianceSuiteHelper {
 	return &ComplianceSuiteHelper{
-		opts: opts,
-		name: name,
-		kind: "ComplianceSuite",
+		opts:       opts,
+		name:       name,
+		kind:       "ComplianceSuite",
+		outputPath: outputPath,
 		gvk: schema.GroupVersionResource{
 			Group:    cmpAPIGroup,
 			Version:  cmpResourceVersion,
