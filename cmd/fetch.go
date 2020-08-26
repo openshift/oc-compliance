@@ -27,15 +27,15 @@ const (
 )
 
 var (
-	namespaceExample = `
-	# Fetch from compliancescan
-	%[1]s fetch-compliance-results compliancescan
-
-	# Fetch from compliancesuite compliancesuite
-	%[1]s fetch-compliance-results
-
-	# Fetch from scansettingbindings
-	%[1]s fetch-compliance-results scansettingbindings foo
+	usageExamples = `
+  # Fetch from compliancescan
+  %[1]s %[2]s compliancescan [resource name] -o [directory]
+  
+  # Fetch from compliancesuite
+  %[1]s %[2]s compliancesuite [resource name] -o [directory]
+  
+  # Fetch from scansettingbindings
+  %[1]s %[2]s scansettingbindings [resource name] -o [directory]
 `
 
 	errNoContext = fmt.Errorf("no context is currently set, use %q to select a new one", "kubectl config use-context <context>")
@@ -76,9 +76,13 @@ func NewCmdFCR(streams genericclioptions.IOStreams) *cobra.Command {
 	o := NewFCROptions(streams)
 
 	cmd := &cobra.Command{
-		Use:          "oc fcr [object] [object name] -o [output path]",
-		Short:        "",
-		Example:      fmt.Sprintf(namespaceExample, "oc"),
+		Use:   "oc fcr [object] [object name] -o [output path]",
+		Short: "Download raw compliance results",
+		Long: `'fcr' stands for 'fetch-compliance-results'.
+
+This command allows you to download the raw results from a
+compliance scan to a specified directory.`,
+		Example:      fmt.Sprintf(usageExamples, "oc", "fcr"),
 		SilenceUsage: true,
 		RunE: func(c *cobra.Command, args []string) error {
 			if err := o.Complete(c, args); err != nil {
