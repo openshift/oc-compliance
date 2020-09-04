@@ -23,6 +23,15 @@ $ oc compliance fetch-raw scansettingbinding nist-moderate -o resultsdir/
 it'll be a similar operator if you want to use `ComplianceSuite` or
 `ComplianceScan` objects.
 
+### rerun-now
+
+Forces the scan or set of scans to re-run on command instead of waiting for
+them to be sheduled.
+
+```
+$ oc compliance rerun-now scansettingbinding nist-moderate
+```
+
 Installing
 ----------
 
