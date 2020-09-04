@@ -9,6 +9,13 @@ import (
 	"k8s.io/kubectl/pkg/scheme"
 )
 
+// ObjectHelper is a generic interface to implement actions
+// that are to be executed on an object
+type ObjectHelper interface {
+	Handle() error
+}
+
+// KubeClientUser is an interface to use kubeclients on a specific namespace
 type KubeClientUser interface {
 	DynamicClient() dynamic.Interface
 	Clientset() kubernetes.Interface

@@ -1,30 +1,32 @@
-package fetchraw
+package rerunnow
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/JAORMX/oc-compliance/internal/common"
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 )
 
-type FetchRawOptions struct {
+type RerunNowContext struct {
 	ConfigFlags *genericclioptions.ConfigFlags
 
 	kuser common.KubeClientUser
 
-	OutputPath string
+	helper common.ObjectHelper
 
 	args []string
-
-	helper common.ObjectHelper
 
 	genericclioptions.IOStreams
 }
 
+func NewReRunNowContext(streams genericclioptions.IOStreams) *RerunNowContext {
+	return &RerunNowContext{
+		ConfigFlags: genericclioptions.NewConfigFlags(true),
+		IOStreams:   streams,
+	}
+}
+
 // Complete sets all information required for updating the current context
-func (o *FetchRawOptions) Complete(cmd *cobra.Command, args []string) error {
+func (o *RerunNowContext) Complete(cmd *cobra.Command, args []string) error {
 	o.args = args
 
 	// Takes precedence
@@ -40,16 +42,7 @@ func (o *FetchRawOptions) Complete(cmd *cobra.Command, args []string) error {
 }
 
 // Validate ensures that all required arguments and flag values are provided
-func (o *FetchRawOptions) Validate() error {
-	finfo, err := os.Stat(o.OutputPath)
-	if os.IsNotExist(err) {
-		return fmt.Errorf("The directory at path '%s' doesn't exist", o.OutputPath)
-	}
-
-	if !finfo.IsDir() {
-		return fmt.Errorf("The output path must be a directory")
-	}
-
+func (o *RerunNowContext) Validate() error {
 	objtype, objname, err := common.ValidateObjectArgs(o.args)
 	if err != nil {
 		return err
@@ -57,16 +50,13 @@ func (o *FetchRawOptions) Validate() error {
 
 	switch objtype {
 	case common.ScanSettingBinding:
-		o.helper = NewScanSettingBindingHelper(o, o.kuser, objname, o.OutputPath)
 	case common.ComplianceSuite:
-		o.helper = NewComplianceSuiteHelper(o, o.kuser, objname, o.OutputPath)
 	case common.ComplianceScan:
-		o.helper = NewComplianceScanHelper(o, o.kuser, objname, o.OutputPath)
+		o.helper = NewComplianceScanHelper(o.kuser, objname)
 	}
-
 	return nil
 }
 
-func (o *FetchRawOptions) Run() error {
+func (o *RerunNowContext) Run() error {
 	return o.helper.Handle()
 }
