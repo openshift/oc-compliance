@@ -3,7 +3,7 @@ BIN=$(BINDIR)/oc-compliance
 
 export GOFLAGS=-mod=vendor
 
-SRC=$(wildcard **/*.go)
+SRC=$(shell find . -name *.go)
 
 .PHONY: all
 all: build
