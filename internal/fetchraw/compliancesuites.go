@@ -1,4 +1,4 @@
-package main
+package fetchraw
 
 import (
 	"context"
@@ -10,6 +10,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+
+	"github.com/JAORMX/oc-compliance/internal/common"
 )
 
 type ComplianceSuiteHelper struct {
@@ -27,8 +29,8 @@ func NewComplianceSuiteHelper(opts *FetchRawOptions, name, outputPath string) *C
 		kind:       "ComplianceSuite",
 		outputPath: outputPath,
 		gvk: schema.GroupVersionResource{
-			Group:    cmpAPIGroup,
-			Version:  cmpResourceVersion,
+			Group:    common.CmpAPIGroup,
+			Version:  common.CmpResourceVersion,
 			Resource: "compliancesuites",
 		},
 	}
@@ -50,7 +52,7 @@ func (h *ComplianceSuiteHelper) Handle() error {
 	fmt.Printf("Fetching results for %s scans: %s\n", h.name, strings.Join(scanNames, ", "))
 
 	for _, scanName := range scanNames {
-		scanDir := path.Join(h.opts.outputPath, scanName)
+		scanDir := path.Join(h.opts.OutputPath, scanName)
 		if err := os.Mkdir(scanDir, 0700); err != nil {
 			return fmt.Errorf("Unable to create directory %s: %s", scanDir, err)
 		}

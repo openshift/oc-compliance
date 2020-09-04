@@ -1,4 +1,4 @@
-package main
+package fetchraw
 
 import (
 	"context"
@@ -13,6 +13,14 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/kubectl/pkg/cmd/cp"
+
+	"github.com/JAORMX/oc-compliance/internal/common"
+)
+
+const (
+	rawResultsMountPath = "raw-results"
+	cmdLabelKey         = "fetch-compliance-results"
+	objNameLabelKey     = "fetch-compliance-results/obj-name"
 )
 
 type ComplianceScanHelper struct {
@@ -31,8 +39,8 @@ func NewComplianceScanHelper(opts *FetchRawOptions, name, outputPath string) *Co
 		kind:       "ComplianceScan",
 		outputPath: outputPath,
 		gvk: schema.GroupVersionResource{
-			Group:    cmpAPIGroup,
-			Version:  cmpResourceVersion,
+			Group:    common.CmpAPIGroup,
+			Version:  common.CmpResourceVersion,
 			Resource: "compliancescans",
 		},
 		podgvk: schema.GroupVersionResource{
@@ -160,7 +168,7 @@ func (h *ComplianceScanHelper) waitForExtractorPod(ns, objName string) error {
 	// retry and ignore errors until timeout
 	var lastErr error
 	fmt.Printf("Fetching raw compliance results for scan '%s'.", h.name)
-	timeouterr := wait.Poll(retryInterval, timeout, func() (bool, error) {
+	timeouterr := wait.Poll(common.RetryInterval, common.Timeout, func() (bool, error) {
 		podlist, err := h.opts.clientset.CoreV1().Pods(ns).List(context.TODO(), opts)
 		lastErr = err
 		if err != nil {

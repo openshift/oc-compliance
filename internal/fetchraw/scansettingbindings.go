@@ -1,4 +1,4 @@
-package main
+package fetchraw
 
 import (
 	"context"
@@ -6,6 +6,8 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+
+	"github.com/JAORMX/oc-compliance/internal/common"
 )
 
 type ScanSettingBindingHelper struct {
@@ -23,8 +25,8 @@ func NewScanSettingBindingHelper(opts *FetchRawOptions, name, outputPath string)
 		kind:       "ScanSettingBinding",
 		outputPath: outputPath,
 		gvk: schema.GroupVersionResource{
-			Group:    cmpAPIGroup,
-			Version:  cmpResourceVersion,
+			Group:    common.CmpAPIGroup,
+			Version:  common.CmpResourceVersion,
 			Resource: "scansettingbindings",
 		},
 	}
