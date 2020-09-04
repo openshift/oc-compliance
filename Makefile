@@ -1,5 +1,5 @@
 BINDIR=./bin
-BIN=$(BINDIR)/oc-fcr
+BIN=$(BINDIR)/oc-compliance
 
 export GOFLAGS=-mod=vendor
 
@@ -12,7 +12,7 @@ all: build
 build: $(BIN)
 
 $(BIN): $(BINDIR) $(SRC)
-	go build -o $(BIN) github.com/JAORMX/fetch-compliance-results/cmd
+	go build -o $(BIN) github.com/JAORMX/oc-compliance/cmd
 
 .PHONY: install
 install: build

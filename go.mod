@@ -1,4 +1,4 @@
-module github.com/JAORMX/fetch-compliance-results
+module github.com/JAORMX/oc-compliance
 
 go 1.14
 
