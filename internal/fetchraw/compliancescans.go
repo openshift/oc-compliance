@@ -33,7 +33,7 @@ type ComplianceScanHelper struct {
 	outputPath string
 }
 
-func NewComplianceScanHelper(opts *FetchRawOptions, kuser common.KubeClientUser, name, outputPath string) *ComplianceScanHelper {
+func NewComplianceScanHelper(opts *FetchRawOptions, kuser common.KubeClientUser, name, outputPath string) common.ObjectHelper {
 	return &ComplianceScanHelper{
 		opts:       opts,
 		kuser:      kuser,
