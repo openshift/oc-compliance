@@ -13,14 +13,14 @@ import (
 )
 
 type ComplianceSuiteHelper struct {
-	opts       *FCROptions
+	opts       *FetchRawOptions
 	gvk        schema.GroupVersionResource
 	name       string
 	kind       string
 	outputPath string
 }
 
-func NewComplianceSuiteHelper(opts *FCROptions, name, outputPath string) *ComplianceSuiteHelper {
+func NewComplianceSuiteHelper(opts *FetchRawOptions, name, outputPath string) *ComplianceSuiteHelper {
 	return &ComplianceSuiteHelper{
 		opts:       opts,
 		name:       name,

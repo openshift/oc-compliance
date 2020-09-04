@@ -9,14 +9,14 @@ import (
 )
 
 type ScanSettingBindingHelper struct {
-	opts       *FCROptions
+	opts       *FetchRawOptions
 	gvk        schema.GroupVersionResource
 	name       string
 	kind       string
 	outputPath string
 }
 
-func NewScanSettingBindingHelper(opts *FCROptions, name, outputPath string) *ScanSettingBindingHelper {
+func NewScanSettingBindingHelper(opts *FetchRawOptions, name, outputPath string) *ScanSettingBindingHelper {
 	return &ScanSettingBindingHelper{
 		opts:       opts,
 		name:       name,

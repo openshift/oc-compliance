@@ -16,7 +16,7 @@ import (
 )
 
 type ComplianceScanHelper struct {
-	opts       *FCROptions
+	opts       *FetchRawOptions
 	gvk        schema.GroupVersionResource
 	podgvk     schema.GroupVersionResource
 	kind       string
@@ -24,7 +24,7 @@ type ComplianceScanHelper struct {
 	outputPath string
 }
 
-func NewComplianceScanHelper(opts *FCROptions, name, outputPath string) *ComplianceScanHelper {
+func NewComplianceScanHelper(opts *FetchRawOptions, name, outputPath string) *ComplianceScanHelper {
 	return &ComplianceScanHelper{
 		opts:       opts,
 		name:       name,

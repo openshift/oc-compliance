@@ -42,11 +42,11 @@ var (
 )
 
 func init() {
-	fetchRawCmd := NewCmdFCR(genericclioptions.IOStreams{In: os.Stdin, Out: os.Stdout, ErrOut: os.Stderr})
+	fetchRawCmd := NewCmdFetchRaw(genericclioptions.IOStreams{In: os.Stdin, Out: os.Stdout, ErrOut: os.Stderr})
 	rootCmd.AddCommand(fetchRawCmd)
 }
 
-type FCROptions struct {
+type FetchRawOptions struct {
 	configFlags *genericclioptions.ConfigFlags
 
 	dynclient dynamic.Interface
@@ -70,24 +70,24 @@ type ObjectHelper interface {
 	Handle() error
 }
 
-func NewFCROptions(streams genericclioptions.IOStreams) *FCROptions {
-	return &FCROptions{
+func NewFetchRawOptions(streams genericclioptions.IOStreams) *FetchRawOptions {
+	return &FetchRawOptions{
 		configFlags: genericclioptions.NewConfigFlags(true),
 		IOStreams:   streams,
 	}
 }
 
-func NewCmdFCR(streams genericclioptions.IOStreams) *cobra.Command {
-	o := NewFCROptions(streams)
+func NewCmdFetchRaw(streams genericclioptions.IOStreams) *cobra.Command {
+	o := NewFetchRawOptions(streams)
 
 	cmd := &cobra.Command{
-		Use:   "fcr [object] [object name] -o [output path]",
+		Use:   "fetch-raw [object] [object name] -o [output path]",
 		Short: "Download raw compliance results",
-		Long: `'fcr' stands for 'fetch-compliance-results'.
+		Long: `'fetch-raw' fetches the raw results for a scan or set of scans.
 
 This command allows you to download the raw results from a
 compliance scan to a specified directory.`,
-		Example:      fmt.Sprintf(usageExamples, "oc", "fcr"),
+		Example:      fmt.Sprintf(usageExamples, "oc compliance", "fetch-raw"),
 		SilenceUsage: true,
 		RunE: func(c *cobra.Command, args []string) error {
 			if err := o.Complete(c, args); err != nil {
@@ -111,7 +111,7 @@ compliance scan to a specified directory.`,
 }
 
 // Complete sets all information required for updating the current context
-func (o *FCROptions) Complete(cmd *cobra.Command, args []string) error {
+func (o *FetchRawOptions) Complete(cmd *cobra.Command, args []string) error {
 	o.args = args
 
 	var err error
@@ -160,7 +160,7 @@ func (o *FCROptions) Complete(cmd *cobra.Command, args []string) error {
 }
 
 // Validate ensures that all required arguments and flag values are provided
-func (o *FCROptions) Validate() error {
+func (o *FetchRawOptions) Validate() error {
 	finfo, err := os.Stat(o.outputPath)
 	if os.IsNotExist(err) {
 		return fmt.Errorf("The directory at path '%s' doesn't exist", o.outputPath)
@@ -210,6 +210,6 @@ func (o *FCROptions) Validate() error {
 	return nil
 }
 
-func (o *FCROptions) Run() error {
+func (o *FetchRawOptions) Run() error {
 	return o.helper.Handle()
 }
