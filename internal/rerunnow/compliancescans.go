@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/JAORMX/oc-compliance/internal/common"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+
+	"github.com/JAORMX/oc-compliance/internal/common"
 )
 
 const (

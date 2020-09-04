@@ -51,6 +51,7 @@ func (o *RerunNowContext) Validate() error {
 	switch objtype {
 	case common.ScanSettingBinding:
 	case common.ComplianceSuite:
+		o.helper = NewComplianceSuiteHelper(o.kuser, objname)
 	case common.ComplianceScan:
 		o.helper = NewComplianceScanHelper(o.kuser, objname)
 	}

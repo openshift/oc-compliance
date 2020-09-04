@@ -1,10 +1,8 @@
-package fetchraw
+package rerunnow
 
 import (
 	"context"
 	"fmt"
-	"os"
-	"path"
 	"strings"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -14,21 +12,17 @@ import (
 )
 
 type ComplianceSuiteHelper struct {
-	opts       *FetchRawOptions
-	kuser      common.KubeClientUser
-	gvk        schema.GroupVersionResource
-	name       string
-	kind       string
-	outputPath string
+	kuser common.KubeClientUser
+	gvk   schema.GroupVersionResource
+	kind  string
+	name  string
 }
 
-func NewComplianceSuiteHelper(opts *FetchRawOptions, kuser common.KubeClientUser, name, outputPath string) *ComplianceSuiteHelper {
+func NewComplianceSuiteHelper(kuser common.KubeClientUser, name string) common.ObjectHelper {
 	return &ComplianceSuiteHelper{
-		opts:       opts,
-		kuser:      kuser,
-		name:       name,
-		kind:       "ComplianceSuite",
-		outputPath: outputPath,
+		kuser: kuser,
+		name:  name,
+		kind:  "ComplianceSuite",
 		gvk: schema.GroupVersionResource{
 			Group:    common.CmpAPIGroup,
 			Version:  common.CmpResourceVersion,
@@ -50,14 +44,10 @@ func (h *ComplianceSuiteHelper) Handle() error {
 		return err
 	}
 
-	fmt.Printf("Fetching results for %s scans: %s\n", h.name, strings.Join(scanNames, ", "))
+	fmt.Printf("Rerunning scans from suite %s: %s\n", h.name, strings.Join(scanNames, ", "))
 
 	for _, scanName := range scanNames {
-		scanDir := path.Join(h.opts.OutputPath, scanName)
-		if err := os.Mkdir(scanDir, 0700); err != nil {
-			return fmt.Errorf("Unable to create directory %s: %s", scanDir, err)
-		}
-		helper := NewComplianceScanHelper(h.opts, h.kuser, scanName, scanDir)
+		helper := NewComplianceScanHelper(h.kuser, scanName)
 		if err = helper.Handle(); err != nil {
 			return fmt.Errorf("Unable to process results from suite %s: %s", h.name, err)
 		}
