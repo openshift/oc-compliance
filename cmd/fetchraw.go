@@ -30,15 +30,8 @@ func init() {
 	rootCmd.AddCommand(fetchRawCmd)
 }
 
-func NewFetchRawOptions(streams genericclioptions.IOStreams) *fetchraw.FetchRawOptions {
-	return &fetchraw.FetchRawOptions{
-		ConfigFlags: genericclioptions.NewConfigFlags(true),
-		IOStreams:   streams,
-	}
-}
-
 func NewCmdFetchRaw(streams genericclioptions.IOStreams) *cobra.Command {
-	o := NewFetchRawOptions(streams)
+	o := fetchraw.NewFetchRawOptions(streams)
 
 	cmd := &cobra.Command{
 		Use:   "fetch-raw [object] [object name] -o [output path]",

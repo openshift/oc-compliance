@@ -24,6 +24,13 @@ type FetchRawOptions struct {
 	genericclioptions.IOStreams
 }
 
+func NewFetchRawOptions(streams genericclioptions.IOStreams) *FetchRawOptions {
+	return &FetchRawOptions{
+		ConfigFlags: genericclioptions.NewConfigFlags(true),
+		IOStreams:   streams,
+	}
+}
+
 // Complete sets all information required for updating the current context
 func (o *FetchRawOptions) Complete(cmd *cobra.Command, args []string) error {
 	o.args = args
