@@ -44,7 +44,7 @@ func (h *ComplianceSuiteHelper) Handle() error {
 		return err
 	}
 
-	fmt.Printf("Rerunning scans from suite %s: %s\n", h.name, strings.Join(scanNames, ", "))
+	fmt.Printf("Rerunning scans from '%s': %s\n", h.name, strings.Join(scanNames, ", "))
 
 	for _, scanName := range scanNames {
 		helper := NewComplianceScanHelper(h.kuser, scanName)
