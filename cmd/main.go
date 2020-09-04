@@ -1,19 +1,28 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
+	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-
-	"k8s.io/cli-runtime/pkg/genericclioptions"
 )
 
+var rootCmd = &cobra.Command{
+	Use:   "oc compliance",
+	Short: "A set of utilities that come along with the compliance-operator.",
+	Long:  `A set of utilities that come along with the compliance-operator.`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		fmt.Fprint(os.Stderr, "You must specify a sub-command.\n\n")
+		return cmd.Usage()
+	},
+}
+
 func main() {
-	flags := pflag.NewFlagSet("oc-fcr", pflag.ExitOnError)
+	flags := pflag.NewFlagSet("oc-compliance", pflag.ExitOnError)
 	pflag.CommandLine = flags
 
-	root := NewCmdFCR(genericclioptions.IOStreams{In: os.Stdin, Out: os.Stdout, ErrOut: os.Stderr})
-	if err := root.Execute(); err != nil {
+	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}
 }

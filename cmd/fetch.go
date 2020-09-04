@@ -41,6 +41,11 @@ var (
 	errNoContext = fmt.Errorf("no context is currently set, use %q to select a new one", "kubectl config use-context <context>")
 )
 
+func init() {
+	fetchRawCmd := NewCmdFCR(genericclioptions.IOStreams{In: os.Stdin, Out: os.Stdout, ErrOut: os.Stderr})
+	rootCmd.AddCommand(fetchRawCmd)
+}
+
 type FCROptions struct {
 	configFlags *genericclioptions.ConfigFlags
 
@@ -76,7 +81,7 @@ func NewCmdFCR(streams genericclioptions.IOStreams) *cobra.Command {
 	o := NewFCROptions(streams)
 
 	cmd := &cobra.Command{
-		Use:   "oc fcr [object] [object name] -o [output path]",
+		Use:   "fcr [object] [object name] -o [output path]",
 		Short: "Download raw compliance results",
 		Long: `'fcr' stands for 'fetch-compliance-results'.
 
