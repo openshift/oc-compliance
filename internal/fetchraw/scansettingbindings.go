@@ -12,15 +12,17 @@ import (
 
 type ScanSettingBindingHelper struct {
 	opts       *FetchRawOptions
+	kuser      common.KubeClientUser
 	gvk        schema.GroupVersionResource
 	name       string
 	kind       string
 	outputPath string
 }
 
-func NewScanSettingBindingHelper(opts *FetchRawOptions, name, outputPath string) *ScanSettingBindingHelper {
+func NewScanSettingBindingHelper(opts *FetchRawOptions, kuser common.KubeClientUser, name, outputPath string) *ScanSettingBindingHelper {
 	return &ScanSettingBindingHelper{
 		opts:       opts,
+		kuser:      kuser,
 		name:       name,
 		kind:       "ScanSettingBinding",
 		outputPath: outputPath,
@@ -34,12 +36,12 @@ func NewScanSettingBindingHelper(opts *FetchRawOptions, name, outputPath string)
 
 func (h *ScanSettingBindingHelper) Handle() error {
 	// Get target resource
-	res, err := h.opts.dynclient.Resource(h.gvk).Namespace(h.opts.namespace).Get(context.TODO(), h.name, metav1.GetOptions{})
+	res, err := h.kuser.DynamicClient().Resource(h.gvk).Namespace(h.kuser.GetNamespace()).Get(context.TODO(), h.name, metav1.GetOptions{})
 	if err != nil {
-		return fmt.Errorf("Unable to get resource %s/%s of type %s: %s", h.opts.namespace, h.name, h.kind, err)
+		return fmt.Errorf("Unable to get resource %s/%s of type %s: %s", h.kuser.GetNamespace(), h.name, h.kind, err)
 	}
 	suiteName := res.GetName()
 
-	helper := NewComplianceSuiteHelper(h.opts, suiteName, h.outputPath)
+	helper := NewComplianceSuiteHelper(h.opts, h.kuser, suiteName, h.outputPath)
 	return helper.Handle()
 }

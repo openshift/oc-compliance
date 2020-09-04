@@ -16,15 +16,17 @@ import (
 
 type ComplianceSuiteHelper struct {
 	opts       *FetchRawOptions
+	kuser      common.KubeClientUser
 	gvk        schema.GroupVersionResource
 	name       string
 	kind       string
 	outputPath string
 }
 
-func NewComplianceSuiteHelper(opts *FetchRawOptions, name, outputPath string) *ComplianceSuiteHelper {
+func NewComplianceSuiteHelper(opts *FetchRawOptions, kuser common.KubeClientUser, name, outputPath string) *ComplianceSuiteHelper {
 	return &ComplianceSuiteHelper{
 		opts:       opts,
+		kuser:      kuser,
 		name:       name,
 		kind:       "ComplianceSuite",
 		outputPath: outputPath,
@@ -38,9 +40,9 @@ func NewComplianceSuiteHelper(opts *FetchRawOptions, name, outputPath string) *C
 
 func (h *ComplianceSuiteHelper) Handle() error {
 	// Get target resource
-	res, err := h.opts.dynclient.Resource(h.gvk).Namespace(h.opts.namespace).Get(context.TODO(), h.name, metav1.GetOptions{})
+	res, err := h.kuser.DynamicClient().Resource(h.gvk).Namespace(h.kuser.GetNamespace()).Get(context.TODO(), h.name, metav1.GetOptions{})
 	if err != nil {
-		return fmt.Errorf("Unable to get resource %s/%s of type %s: %s", h.opts.namespace, h.name, h.kind, err)
+		return fmt.Errorf("Unable to get resource %s/%s of type %s: %s", h.kuser.GetNamespace(), h.name, h.kind, err)
 	}
 
 	// Get needed data
@@ -56,7 +58,7 @@ func (h *ComplianceSuiteHelper) Handle() error {
 		if err := os.Mkdir(scanDir, 0700); err != nil {
 			return fmt.Errorf("Unable to create directory %s: %s", scanDir, err)
 		}
-		helper := NewComplianceScanHelper(h.opts, scanName, scanDir)
+		helper := NewComplianceScanHelper(h.opts, h.kuser, scanName, scanDir)
 		if err = helper.Handle(); err != nil {
 			return fmt.Errorf("Unable to process results from suite %s: %s", h.name, err)
 		}
@@ -68,10 +70,10 @@ func (h *ComplianceSuiteHelper) getScanNames(obj *unstructured.Unstructured) ([]
 	scanNames := []string{}
 	scans, found, err := unstructured.NestedSlice(obj.Object, "spec", "scans")
 	if err != nil {
-		return nil, fmt.Errorf("Unable to get scans of '%s/%s' of type %s", h.opts.namespace, h.name, h.kind)
+		return nil, fmt.Errorf("Unable to get scans of '%s/%s' of type %s", h.kuser.GetNamespace(), h.name, h.kind)
 	}
 	if !found {
-		return nil, fmt.Errorf("'%s/%s' of type %s has no scans in spec", h.opts.namespace, h.name, h.kind)
+		return nil, fmt.Errorf("'%s/%s' of type %s has no scans in spec", h.kuser.GetNamespace(), h.name, h.kind)
 	}
 	for _, rawscan := range scans {
 		scan, ok := rawscan.(map[string]interface{})
@@ -80,10 +82,10 @@ func (h *ComplianceSuiteHelper) getScanNames(obj *unstructured.Unstructured) ([]
 		}
 		name, found, err := unstructured.NestedString(scan, "name")
 		if err != nil {
-			return nil, fmt.Errorf("Unable to get scan name of '%s/%s' of type %s", h.opts.namespace, h.name, h.kind)
+			return nil, fmt.Errorf("Unable to get scan name of '%s/%s' of type %s", h.kuser.GetNamespace(), h.name, h.kind)
 		}
 		if !found {
-			return nil, fmt.Errorf("'%s/%s' of type %s has no scan name in spec", h.opts.namespace, h.name, h.kind)
+			return nil, fmt.Errorf("'%s/%s' of type %s has no scan name in spec", h.kuser.GetNamespace(), h.name, h.kind)
 		}
 
 		scanNames = append(scanNames, name)

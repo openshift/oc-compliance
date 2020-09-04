@@ -25,6 +25,7 @@ const (
 
 type ComplianceScanHelper struct {
 	opts       *FetchRawOptions
+	kuser      common.KubeClientUser
 	gvk        schema.GroupVersionResource
 	podgvk     schema.GroupVersionResource
 	kind       string
@@ -32,9 +33,10 @@ type ComplianceScanHelper struct {
 	outputPath string
 }
 
-func NewComplianceScanHelper(opts *FetchRawOptions, name, outputPath string) *ComplianceScanHelper {
+func NewComplianceScanHelper(opts *FetchRawOptions, kuser common.KubeClientUser, name, outputPath string) *ComplianceScanHelper {
 	return &ComplianceScanHelper{
 		opts:       opts,
+		kuser:      kuser,
 		name:       name,
 		kind:       "ComplianceScan",
 		outputPath: outputPath,
@@ -53,9 +55,9 @@ func NewComplianceScanHelper(opts *FetchRawOptions, name, outputPath string) *Co
 
 func (h *ComplianceScanHelper) Handle() error {
 	// Get target resource
-	res, err := h.opts.dynclient.Resource(h.gvk).Namespace(h.opts.namespace).Get(context.TODO(), h.name, metav1.GetOptions{})
+	res, err := h.kuser.DynamicClient().Resource(h.gvk).Namespace(h.kuser.GetNamespace()).Get(context.TODO(), h.name, metav1.GetOptions{})
 	if err != nil {
-		return fmt.Errorf("Unable to get resource %s/%s of type %s: %s", h.opts.namespace, h.name, h.kind, err)
+		return fmt.Errorf("Unable to get resource %s/%s of type %s: %s", h.kuser.GetNamespace(), h.name, h.kind, err)
 	}
 
 	// Get needed data
@@ -90,7 +92,7 @@ func (h *ComplianceScanHelper) Handle() error {
 
 	// Create extractor pod
 	extractorPod := getPVCExtractorPod(res.GetName(), rsnamespace, claimName)
-	extractorPod, err = h.opts.clientset.CoreV1().Pods(rsnamespace).Create(context.TODO(), extractorPod, metav1.CreateOptions{})
+	extractorPod, err = h.kuser.Clientset().CoreV1().Pods(rsnamespace).Create(context.TODO(), extractorPod, metav1.CreateOptions{})
 	if err != nil && !kerrors.IsAlreadyExists(err) {
 		return err
 	}
@@ -103,8 +105,8 @@ func (h *ComplianceScanHelper) Handle() error {
 
 	cpopts := cp.NewCopyOptions(h.opts.IOStreams)
 	cpopts.Namespace = rsnamespace
-	cpopts.ClientConfig = h.opts.cfg
-	cpopts.Clientset = h.opts.clientset
+	cpopts.ClientConfig = h.kuser.GetConfig()
+	cpopts.Clientset = h.kuser.Clientset()
 
 	podName := extractorPod.GetName()
 	path := fmt.Sprintf("%s/%d", rawResultsMountPath, ci)
@@ -122,7 +124,7 @@ func (h *ComplianceScanHelper) Handle() error {
 
 	// delete extractor pod
 	var zeroGP int64 = 0
-	return h.opts.clientset.CoreV1().Pods(rsnamespace).Delete(context.TODO(), extractorPod.GetName(), metav1.DeleteOptions{
+	return h.kuser.Clientset().CoreV1().Pods(rsnamespace).Delete(context.TODO(), extractorPod.GetName(), metav1.DeleteOptions{
 		GracePeriodSeconds: &zeroGP,
 	})
 }
@@ -133,7 +135,7 @@ func (h *ComplianceScanHelper) getScanPhase(obj *unstructured.Unstructured) (str
 		return "", fmt.Errorf("Unable to get phase of %s/%s of type %s: %s", obj.GetNamespace(), obj.GetName(), "ComplianceScan", err)
 	}
 	if !found {
-		return "", fmt.Errorf("%s/%s of type %s: has no phase in status", h.opts.namespace, h.name, h.kind)
+		return "", fmt.Errorf("%s/%s of type %s: has no phase in status", obj.GetNamespace(), h.name, h.kind)
 	}
 	return phase, nil
 }
@@ -155,7 +157,7 @@ func (h *ComplianceScanHelper) getResultsStorageRef(obj *unstructured.Unstructur
 		return nil, fmt.Errorf("Unable to get resultsStorage of %s/%s of type %s: %s", obj.GetNamespace(), obj.GetName(), "ComplianceScan", err)
 	}
 	if !found {
-		return nil, fmt.Errorf("%s/%s of type %s: has no resultsStorage in status", h.opts.namespace, h.name, h.kind)
+		return nil, fmt.Errorf("%s/%s of type %s: has no resultsStorage in status", obj.GetNamespace(), h.name, h.kind)
 	}
 	return rs, nil
 }
@@ -169,7 +171,7 @@ func (h *ComplianceScanHelper) waitForExtractorPod(ns, objName string) error {
 	var lastErr error
 	fmt.Printf("Fetching raw compliance results for scan '%s'.", h.name)
 	timeouterr := wait.Poll(common.RetryInterval, common.Timeout, func() (bool, error) {
-		podlist, err := h.opts.clientset.CoreV1().Pods(ns).List(context.TODO(), opts)
+		podlist, err := h.kuser.Clientset().CoreV1().Pods(ns).List(context.TODO(), opts)
 		lastErr = err
 		if err != nil {
 			// retry

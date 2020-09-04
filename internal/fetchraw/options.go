@@ -5,25 +5,15 @@ import (
 	"os"
 	"strings"
 
+	"github.com/JAORMX/oc-compliance/internal/common"
 	"github.com/spf13/cobra"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
-	"k8s.io/client-go/dynamic"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	"k8s.io/kubectl/pkg/scheme"
 )
 
 type FetchRawOptions struct {
 	ConfigFlags *genericclioptions.ConfigFlags
 
-	dynclient dynamic.Interface
-
-	clientset kubernetes.Interface
-
-	cfg *rest.Config
-
-	namespace string
+	kuser common.KubeClientUser
 
 	OutputPath string
 
@@ -42,47 +32,14 @@ type ObjectHelper interface {
 func (o *FetchRawOptions) Complete(cmd *cobra.Command, args []string) error {
 	o.args = args
 
-	var err error
-
-	o.cfg, err = o.ConfigFlags.ToRESTConfig()
-	if err != nil {
-		panic(err)
-	}
-
-	// NOTE(jaosorior): workaround for https://github.com/kubernetes/client-go/issues/657
-	o.cfg.GroupVersion = &schema.GroupVersion{Group: "", Version: "v1"}
-	o.cfg.NegotiatedSerializer = scheme.Codecs.WithoutConversion()
-	// NOTE(jaosorior): This is needed so the appropriate api path is used.
-	o.cfg.APIPath = "/api"
-
-	o.clientset, err = kubernetes.NewForConfig(o.cfg)
-	if err != nil {
-		panic(err)
-	}
-
-	o.dynclient, err = dynamic.NewForConfig(o.cfg)
-	if err != nil {
-		panic(err)
-	}
-
-	rawConfig, err := o.ConfigFlags.ToRawKubeConfigLoader().RawConfig()
-	if err != nil {
-		return err
-	}
-
-	if currentContext, exists := rawConfig.Contexts[rawConfig.CurrentContext]; exists {
-		if currentContext.Namespace != "" {
-			o.namespace = currentContext.Namespace
-		}
-	}
-
 	// Takes precedence
 	givenNamespace, err := cmd.Flags().GetString("namespace")
 	if err != nil {
 		return err
 	}
-	if givenNamespace != "" {
-		o.namespace = givenNamespace
+	o.kuser, err = common.NewKubeClientUser(o.ConfigFlags, givenNamespace)
+	if err != nil {
+		return err
 	}
 	return nil
 }
@@ -126,11 +83,11 @@ func (o *FetchRawOptions) Validate() error {
 
 	switch rawobjtype {
 	case "ScanSettingBindings", "ScanSettingBinding", "scansettingbindings", "scansettingbinding":
-		o.helper = NewScanSettingBindingHelper(o, objname, o.OutputPath)
+		o.helper = NewScanSettingBindingHelper(o, o.kuser, objname, o.OutputPath)
 	case "ComplianceSuites", "ComplianceSuite", "compliancesuites", "compliancesuite":
-		o.helper = NewComplianceSuiteHelper(o, objname, o.OutputPath)
+		o.helper = NewComplianceSuiteHelper(o, o.kuser, objname, o.OutputPath)
 	case "ComplianceScans", "ComplianceScan", "compliancescans", "compliancescan":
-		o.helper = NewComplianceScanHelper(o, objname, o.OutputPath)
+		o.helper = NewComplianceScanHelper(o, o.kuser, objname, o.OutputPath)
 	default:
 		return fmt.Errorf("Unkown object type: %s", rawobjtype)
 	}
