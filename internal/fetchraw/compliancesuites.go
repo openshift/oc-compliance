@@ -22,7 +22,7 @@ type ComplianceSuiteHelper struct {
 	outputPath string
 }
 
-func NewComplianceSuiteHelper(opts *FetchRawOptions, kuser common.KubeClientUser, name, outputPath string) *ComplianceSuiteHelper {
+func NewComplianceSuiteHelper(opts *FetchRawOptions, kuser common.KubeClientUser, name, outputPath string) common.ObjectHelper {
 	return &ComplianceSuiteHelper{
 		opts:       opts,
 		kuser:      kuser,

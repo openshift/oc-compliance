@@ -19,7 +19,7 @@ type ScanSettingBindingHelper struct {
 	outputPath string
 }
 
-func NewScanSettingBindingHelper(opts *FetchRawOptions, kuser common.KubeClientUser, name, outputPath string) *ScanSettingBindingHelper {
+func NewScanSettingBindingHelper(opts *FetchRawOptions, kuser common.KubeClientUser, name, outputPath string) common.ObjectHelper {
 	return &ScanSettingBindingHelper{
 		opts:       opts,
 		kuser:      kuser,
