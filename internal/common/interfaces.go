@@ -1,6 +1,7 @@
 package common
 
 import (
+	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/dynamic"
@@ -85,4 +86,32 @@ func (kuser *kubeClientUserImp) GetConfig() *rest.Config {
 
 func (kuser *kubeClientUserImp) GetNamespace() string {
 	return kuser.namespace
+}
+
+type CommandContext struct {
+	ConfigFlags *genericclioptions.ConfigFlags
+
+	Kuser KubeClientUser
+
+	Helper ObjectHelper
+
+	Args []string
+
+	genericclioptions.IOStreams
+}
+
+// Complete sets all information required for updating the current context
+func (o *CommandContext) Complete(cmd *cobra.Command, args []string) error {
+	o.Args = args
+
+	// Takes precedence
+	givenNamespace, err := cmd.Flags().GetString("namespace")
+	if err != nil {
+		return err
+	}
+	o.Kuser, err = NewKubeClientUser(o.ConfigFlags, givenNamespace)
+	if err != nil {
+		return err
+	}
+	return nil
 }

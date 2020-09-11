@@ -4,47 +4,24 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"github.com/JAORMX/oc-compliance/internal/common"
 )
 
 type FetchRawOptions struct {
-	ConfigFlags *genericclioptions.ConfigFlags
-
-	kuser common.KubeClientUser
+	common.CommandContext
 
 	OutputPath string
-
-	args []string
-
-	helper common.ObjectHelper
-
-	genericclioptions.IOStreams
 }
 
 func NewFetchRawOptions(streams genericclioptions.IOStreams) *FetchRawOptions {
 	return &FetchRawOptions{
-		ConfigFlags: genericclioptions.NewConfigFlags(true),
-		IOStreams:   streams,
+		CommandContext: common.CommandContext{
+			ConfigFlags: genericclioptions.NewConfigFlags(true),
+			IOStreams:   streams,
+		},
 	}
-}
-
-// Complete sets all information required for updating the current context
-func (o *FetchRawOptions) Complete(cmd *cobra.Command, args []string) error {
-	o.args = args
-
-	// Takes precedence
-	givenNamespace, err := cmd.Flags().GetString("namespace")
-	if err != nil {
-		return err
-	}
-	o.kuser, err = common.NewKubeClientUser(o.ConfigFlags, givenNamespace)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 // Validate ensures that all required arguments and flag values are provided
@@ -58,18 +35,18 @@ func (o *FetchRawOptions) Validate() error {
 		return fmt.Errorf("The output path must be a directory")
 	}
 
-	objtype, objname, err := common.ValidateObjectArgs(o.args)
+	objtype, objname, err := common.ValidateObjectArgs(o.Args)
 	if err != nil {
 		return err
 	}
 
 	switch objtype {
 	case common.ScanSettingBinding:
-		o.helper = NewScanSettingBindingHelper(o, o.kuser, objname, o.OutputPath)
+		o.Helper = NewScanSettingBindingHelper(o, o.Kuser, objname, o.OutputPath)
 	case common.ComplianceSuite:
-		o.helper = NewComplianceSuiteHelper(o, o.kuser, objname, o.OutputPath)
+		o.Helper = NewComplianceSuiteHelper(o, o.Kuser, objname, o.OutputPath)
 	case common.ComplianceScan:
-		o.helper = NewComplianceScanHelper(o, o.kuser, objname, o.OutputPath)
+		o.Helper = NewComplianceScanHelper(o, o.Kuser, objname, o.OutputPath)
 	default:
 		return fmt.Errorf("Invalid object type for this command")
 	}
@@ -78,5 +55,5 @@ func (o *FetchRawOptions) Validate() error {
 }
 
 func (o *FetchRawOptions) Run() error {
-	return o.helper.Handle()
+	return o.Helper.Handle()
 }

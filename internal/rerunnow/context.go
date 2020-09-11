@@ -9,34 +9,28 @@ import (
 )
 
 type RerunNowContext struct {
-	ConfigFlags *genericclioptions.ConfigFlags
-
-	kuser common.KubeClientUser
-
-	helper common.ObjectHelper
-
-	args []string
-
-	genericclioptions.IOStreams
+	common.CommandContext
 }
 
 func NewReRunNowContext(streams genericclioptions.IOStreams) *RerunNowContext {
 	return &RerunNowContext{
-		ConfigFlags: genericclioptions.NewConfigFlags(true),
-		IOStreams:   streams,
+		CommandContext: common.CommandContext{
+			ConfigFlags: genericclioptions.NewConfigFlags(true),
+			IOStreams:   streams,
+		},
 	}
 }
 
 // Complete sets all information required for updating the current context
 func (o *RerunNowContext) Complete(cmd *cobra.Command, args []string) error {
-	o.args = args
+	o.Args = args
 
 	// Takes precedence
 	givenNamespace, err := cmd.Flags().GetString("namespace")
 	if err != nil {
 		return err
 	}
-	o.kuser, err = common.NewKubeClientUser(o.ConfigFlags, givenNamespace)
+	o.Kuser, err = common.NewKubeClientUser(o.ConfigFlags, givenNamespace)
 	if err != nil {
 		return err
 	}
@@ -45,18 +39,18 @@ func (o *RerunNowContext) Complete(cmd *cobra.Command, args []string) error {
 
 // Validate ensures that all required arguments and flag values are provided
 func (o *RerunNowContext) Validate() error {
-	objtype, objname, err := common.ValidateObjectArgs(o.args)
+	objtype, objname, err := common.ValidateObjectArgs(o.Args)
 	if err != nil {
 		return err
 	}
 
 	switch objtype {
 	case common.ScanSettingBinding:
-		o.helper = NewScanSettingBindingHelper(o.kuser, objname)
+		o.Helper = NewScanSettingBindingHelper(o.Kuser, objname)
 	case common.ComplianceSuite:
-		o.helper = NewComplianceSuiteHelper(o.kuser, objname)
+		o.Helper = NewComplianceSuiteHelper(o.Kuser, objname)
 	case common.ComplianceScan:
-		o.helper = NewComplianceScanHelper(o.kuser, objname)
+		o.Helper = NewComplianceScanHelper(o.Kuser, objname)
 	default:
 		return fmt.Errorf("Invalid object type for this command")
 	}
@@ -64,5 +58,5 @@ func (o *RerunNowContext) Validate() error {
 }
 
 func (o *RerunNowContext) Run() error {
-	return o.helper.Handle()
+	return o.Helper.Handle()
 }
