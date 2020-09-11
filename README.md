@@ -32,6 +32,15 @@ them to be sheduled.
 $ oc compliance rerun-now scansettingbinding nist-moderate
 ```
 
+### report
+
+Creates a report of what compliance standards and controls will a benchmark
+fulfil.
+
+```
+$ oc compliance report profile rhcos4-moderate
+```
+
 Installing
 ----------
 

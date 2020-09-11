@@ -11,6 +11,7 @@ const (
 	ComplianceScan ComplianceType = iota
 	ComplianceSuite
 	ScanSettingBinding
+	Profile
 	TypeUnkown
 )
 
@@ -56,6 +57,8 @@ func GetValidObjType(rawtype string) (ComplianceType, error) {
 		return ComplianceSuite, nil
 	case "ComplianceScans", "ComplianceScan", "compliancescans", "compliancescan":
 		return ComplianceScan, nil
+	case "Profiles", "Profile", "profiles", "profile":
+		return Profile, nil
 	default:
 		return TypeUnkown, fmt.Errorf("Unkown object type: %s", rawtype)
 	}
