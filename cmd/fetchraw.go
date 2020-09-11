@@ -10,8 +10,14 @@ import (
 	fetchraw "github.com/JAORMX/oc-compliance/internal/fetchraw"
 )
 
-var (
-	usageExamples = `
+func init() {
+	fetchRawCmd := NewCmdFetchRaw(genericclioptions.IOStreams{In: os.Stdin, Out: os.Stdout, ErrOut: os.Stderr})
+	rootCmd.AddCommand(fetchRawCmd)
+}
+
+func NewCmdFetchRaw(streams genericclioptions.IOStreams) *cobra.Command {
+	var (
+		usageExamples = `
   # Fetch from compliancescan
   %[1]s %[2]s compliancescan [resource name] -o [directory]
   
@@ -21,16 +27,8 @@ var (
   # Fetch from scansettingbindings
   %[1]s %[2]s scansettingbindings [resource name] -o [directory]
 `
+	)
 
-	errNoContext = fmt.Errorf("no context is currently set, use %q to select a new one", "kubectl config use-context <context>")
-)
-
-func init() {
-	fetchRawCmd := NewCmdFetchRaw(genericclioptions.IOStreams{In: os.Stdin, Out: os.Stdout, ErrOut: os.Stderr})
-	rootCmd.AddCommand(fetchRawCmd)
-}
-
-func NewCmdFetchRaw(streams genericclioptions.IOStreams) *cobra.Command {
 	o := fetchraw.NewFetchRawOptions(streams)
 
 	cmd := &cobra.Command{

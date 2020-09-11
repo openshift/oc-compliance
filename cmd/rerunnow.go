@@ -9,8 +9,14 @@ import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 )
 
-var (
-	rerunExamples = `
+func init() {
+	rerunNowCmd := NewCmdRerunNow(genericclioptions.IOStreams{In: os.Stdin, Out: os.Stdout, ErrOut: os.Stderr})
+	rootCmd.AddCommand(rerunNowCmd)
+}
+
+func NewCmdRerunNow(streams genericclioptions.IOStreams) *cobra.Command {
+	var (
+		rerunExamples = `
   # rerun a compliancescan
   %[1]s %[2]s compliancescan [resource name]
   
@@ -20,14 +26,8 @@ var (
   # rerun a scansettingbindings
   %[1]s %[2]s scansettingbindings [resource name]
 `
-)
+	)
 
-func init() {
-	rerunNowCmd := NewCmdRerunNow(genericclioptions.IOStreams{In: os.Stdin, Out: os.Stdout, ErrOut: os.Stderr})
-	rootCmd.AddCommand(rerunNowCmd)
-}
-
-func NewCmdRerunNow(streams genericclioptions.IOStreams) *cobra.Command {
 	ctx := rerunnow.NewReRunNowContext(streams)
 	cmd := &cobra.Command{
 		Use:          "rerun-now [object] [object name]",
