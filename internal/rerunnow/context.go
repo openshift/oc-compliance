@@ -1,6 +1,8 @@
 package rerunnow
 
 import (
+	"fmt"
+
 	"github.com/JAORMX/oc-compliance/internal/common"
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
@@ -55,6 +57,8 @@ func (o *RerunNowContext) Validate() error {
 		o.helper = NewComplianceSuiteHelper(o.kuser, objname)
 	case common.ComplianceScan:
 		o.helper = NewComplianceScanHelper(o.kuser, objname)
+	default:
+		return fmt.Errorf("Invalid object type for this command")
 	}
 	return nil
 }

@@ -70,6 +70,8 @@ func (o *FetchRawOptions) Validate() error {
 		o.helper = NewComplianceSuiteHelper(o, o.kuser, objname, o.OutputPath)
 	case common.ComplianceScan:
 		o.helper = NewComplianceScanHelper(o, o.kuser, objname, o.OutputPath)
+	default:
+		return fmt.Errorf("Invalid object type for this command")
 	}
 
 	return nil
