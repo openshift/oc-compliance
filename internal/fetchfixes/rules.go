@@ -29,7 +29,7 @@ func NewRuleHelper(kuser common.KubeClientUser, name string, outputPath string, 
 	return &RuleHelper{
 		kuser: kuser,
 		name:  name,
-		kind:  "Profile",
+		kind:  "Rule",
 		gvk: schema.GroupVersionResource{
 			Group:    common.CmpAPIGroup,
 			Version:  common.CmpResourceVersion,
@@ -117,12 +117,4 @@ func (h *RuleHelper) getAvailableFixes(obj *unstructured.Unstructured) ([]*unstr
 		output = append(output, fixobj)
 	}
 	return output, nil
-}
-
-func setFixName(obj *unstructured.Unstructured, name string, id int, needsSuffix bool) {
-	if !needsSuffix {
-		obj.SetName(name)
-	} else {
-		obj.SetName(fmt.Sprintf("%s-%d", name, id))
-	}
 }

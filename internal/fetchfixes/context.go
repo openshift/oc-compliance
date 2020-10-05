@@ -44,6 +44,8 @@ func (o *FetchFixesContext) Validate() error {
 		o.Helper = NewRuleHelper(o.Kuser, objname, o.OutputPath, o.IOStreams)
 	case common.Profile:
 		o.Helper = NewProfileHelper(o.Kuser, objname, o.OutputPath, o.IOStreams)
+	case common.ComplianceRemediation:
+		o.Helper = NewComplianceRemediationHelper(o.Kuser, objname, o.OutputPath, o.IOStreams)
 	default:
 		return fmt.Errorf("Invalid object type for this command")
 	}

@@ -10,6 +10,7 @@ type ComplianceType int
 const (
 	ComplianceScan ComplianceType = iota
 	ComplianceSuite
+	ComplianceRemediation
 	ScanSettingBinding
 	Profile
 	Rule
@@ -58,6 +59,8 @@ func GetValidObjType(rawtype string) (ComplianceType, error) {
 		return ComplianceSuite, nil
 	case "ComplianceScans", "ComplianceScan", "compliancescans", "compliancescan":
 		return ComplianceScan, nil
+	case "ComplianceRemediations", "ComplianceRemediation", "complianceremediations", "complianceremediation":
+		return ComplianceRemediation, nil
 	case "Profiles", "Profile", "profiles", "profile":
 		return Profile, nil
 	case "Rules", "Rule", "rules", "rule":
