@@ -8,7 +8,6 @@ import (
 
 	"github.com/olekukonko/tablewriter"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
@@ -53,7 +52,7 @@ func (h *ProfileHelper) Handle() error {
 		return err
 	}
 
-	rules, err := h.getRules(p)
+	rules, err := common.GetRulesFromProfile(p)
 	if err != nil {
 		return err
 	}
@@ -81,17 +80,6 @@ func (h *ProfileHelper) Handle() error {
 
 	h.render(results)
 	return nil
-}
-
-func (h *ProfileHelper) getRules(obj *unstructured.Unstructured) ([]string, error) {
-	rules, found, err := unstructured.NestedStringSlice(obj.Object, "rules")
-	if err != nil {
-		return nil, fmt.Errorf("Unable to get rules of %s/%s of type %s: %s", obj.GetNamespace(), obj.GetName(), h.kind, err)
-	}
-	if !found {
-		return nil, fmt.Errorf("%s/%s of type %s: has no rules", obj.GetNamespace(), h.name, h.kind)
-	}
-	return rules, nil
 }
 
 func (h *ProfileHelper) render(res map[string][]string) {

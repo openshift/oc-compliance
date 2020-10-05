@@ -51,7 +51,7 @@ func (h *RuleHelper) Handle() error {
 	}
 
 	if len(fixes) == 0 {
-		fmt.Fprint(h.Out, "No fixes to persist.")
+		fmt.Fprintf(h.Out, "No fixes to persist for rule '%s'\n", r.GetName())
 		return nil
 	}
 
