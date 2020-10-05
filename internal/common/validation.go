@@ -12,6 +12,7 @@ const (
 	ComplianceSuite
 	ScanSettingBinding
 	Profile
+	Rule
 	TypeUnkown
 )
 
@@ -59,6 +60,8 @@ func GetValidObjType(rawtype string) (ComplianceType, error) {
 		return ComplianceScan, nil
 	case "Profiles", "Profile", "profiles", "profile":
 		return Profile, nil
+	case "Rules", "Rule", "rules", "rule":
+		return Rule, nil
 	default:
 		return TypeUnkown, fmt.Errorf("Unkown object type: %s", rawtype)
 	}
