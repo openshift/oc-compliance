@@ -1,4 +1,4 @@
-package report
+package controls
 
 import (
 	"fmt"
@@ -7,12 +7,12 @@ import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 )
 
-type ReportContext struct {
+type ControlsContext struct {
 	common.CommandContext
 }
 
-func NewReportContext(streams genericclioptions.IOStreams) *ReportContext {
-	return &ReportContext{
+func NewControlsContext(streams genericclioptions.IOStreams) *ControlsContext {
+	return &ControlsContext{
 		CommandContext: common.CommandContext{
 			ConfigFlags: genericclioptions.NewConfigFlags(true),
 			IOStreams:   streams,
@@ -21,7 +21,7 @@ func NewReportContext(streams genericclioptions.IOStreams) *ReportContext {
 }
 
 // Validate ensures that all required arguments and flag values are provided
-func (o *ReportContext) Validate() error {
+func (o *ControlsContext) Validate() error {
 	objtype, objname, err := common.ValidateObjectArgs(o.Args)
 	if err != nil {
 		return err
@@ -36,6 +36,6 @@ func (o *ReportContext) Validate() error {
 	return nil
 }
 
-func (o *ReportContext) Run() error {
+func (o *ControlsContext) Run() error {
 	return o.Helper.Handle()
 }
