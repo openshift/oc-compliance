@@ -67,7 +67,12 @@ func (h *RuleHelper) Handle() error {
 	defer f.Close()
 
 	writer := json.YAMLFramer.NewFrameWriter(f)
-	for _, fix := range fixes {
+	needsSuffix := len(fixes) > 1
+	for idx, fix := range fixes {
+		// Needed for MachineConfigs
+		if fix.GetName() == "" {
+			setFixName(fix, r.GetName(), idx, needsSuffix)
+		}
 		if err := yamlSerializer.Encode(fix, writer); err != nil {
 			return fmt.Errorf("Couldn't serialize fix from rule '%s': %s", r.GetName(), err)
 		}
@@ -112,4 +117,12 @@ func (h *RuleHelper) getAvailableFixes(obj *unstructured.Unstructured) ([]*unstr
 		output = append(output, fixobj)
 	}
 	return output, nil
+}
+
+func setFixName(obj *unstructured.Unstructured, name string, id int, needsSuffix bool) {
+	if !needsSuffix {
+		obj.SetName(name)
+	} else {
+		obj.SetName(fmt.Sprintf("%s-%d", name, id))
+	}
 }
