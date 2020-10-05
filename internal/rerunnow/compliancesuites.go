@@ -7,6 +7,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"github.com/JAORMX/oc-compliance/internal/common"
 )
@@ -16,9 +17,10 @@ type ComplianceSuiteHelper struct {
 	gvk   schema.GroupVersionResource
 	kind  string
 	name  string
+	genericclioptions.IOStreams
 }
 
-func NewComplianceSuiteHelper(kuser common.KubeClientUser, name string) common.ObjectHelper {
+func NewComplianceSuiteHelper(kuser common.KubeClientUser, name string, streams genericclioptions.IOStreams) common.ObjectHelper {
 	return &ComplianceSuiteHelper{
 		kuser: kuser,
 		name:  name,
@@ -28,6 +30,7 @@ func NewComplianceSuiteHelper(kuser common.KubeClientUser, name string) common.O
 			Version:  common.CmpResourceVersion,
 			Resource: "compliancesuites",
 		},
+		IOStreams: streams,
 	}
 }
 
@@ -44,10 +47,10 @@ func (h *ComplianceSuiteHelper) Handle() error {
 		return err
 	}
 
-	fmt.Printf("Rerunning scans from '%s': %s\n", h.name, strings.Join(scanNames, ", "))
+	fmt.Fprintf(h.Out, "Rerunning scans from '%s': %s\n", h.name, strings.Join(scanNames, ", "))
 
 	for _, scanName := range scanNames {
-		helper := NewComplianceScanHelper(h.kuser, scanName)
+		helper := NewComplianceScanHelper(h.kuser, scanName, h.IOStreams)
 		if err = helper.Handle(); err != nil {
 			return fmt.Errorf("Unable to process results from suite %s: %s", h.name, err)
 		}

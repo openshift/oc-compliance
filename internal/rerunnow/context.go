@@ -46,11 +46,11 @@ func (o *RerunNowContext) Validate() error {
 
 	switch objtype {
 	case common.ScanSettingBinding:
-		o.Helper = NewScanSettingBindingHelper(o.Kuser, objname)
+		o.Helper = NewScanSettingBindingHelper(o.Kuser, objname, o.IOStreams)
 	case common.ComplianceSuite:
-		o.Helper = NewComplianceSuiteHelper(o.Kuser, objname)
+		o.Helper = NewComplianceSuiteHelper(o.Kuser, objname, o.IOStreams)
 	case common.ComplianceScan:
-		o.Helper = NewComplianceScanHelper(o.Kuser, objname)
+		o.Helper = NewComplianceScanHelper(o.Kuser, objname, o.IOStreams)
 	default:
 		return fmt.Errorf("Invalid object type for this command")
 	}

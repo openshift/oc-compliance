@@ -3,7 +3,6 @@ package controls
 import (
 	"context"
 	"fmt"
-	"os"
 	"sort"
 	"strings"
 
@@ -11,6 +10,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"github.com/JAORMX/oc-compliance/internal/common"
 )
@@ -23,9 +23,10 @@ type ProfileHelper struct {
 	rulegvk schema.GroupVersionResource
 	kind    string
 	name    string
+	genericclioptions.IOStreams
 }
 
-func NewProfileHelper(kuser common.KubeClientUser, name string) common.ObjectHelper {
+func NewProfileHelper(kuser common.KubeClientUser, name string, streams genericclioptions.IOStreams) common.ObjectHelper {
 	return &ProfileHelper{
 		kuser: kuser,
 		name:  name,
@@ -40,6 +41,7 @@ func NewProfileHelper(kuser common.KubeClientUser, name string) common.ObjectHel
 			Version:  common.CmpResourceVersion,
 			Resource: "rules",
 		},
+		IOStreams: streams,
 	}
 }
 
@@ -93,7 +95,7 @@ func (h *ProfileHelper) getRules(obj *unstructured.Unstructured) ([]string, erro
 }
 
 func (h *ProfileHelper) render(res map[string][]string) {
-	table := tablewriter.NewWriter(os.Stdout)
+	table := tablewriter.NewWriter(h.Out)
 	table.SetHeader([]string{"Framework", "Controls"})
 	table.SetAutoMergeCells(true)
 	table.SetRowLine(true)

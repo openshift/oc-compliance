@@ -9,6 +9,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"github.com/JAORMX/oc-compliance/internal/common"
 )
@@ -20,9 +21,10 @@ type ComplianceSuiteHelper struct {
 	name       string
 	kind       string
 	outputPath string
+	genericclioptions.IOStreams
 }
 
-func NewComplianceSuiteHelper(opts *FetchRawOptions, kuser common.KubeClientUser, name, outputPath string) common.ObjectHelper {
+func NewComplianceSuiteHelper(opts *FetchRawOptions, kuser common.KubeClientUser, name, outputPath string, streams genericclioptions.IOStreams) common.ObjectHelper {
 	return &ComplianceSuiteHelper{
 		opts:       opts,
 		kuser:      kuser,
@@ -34,6 +36,7 @@ func NewComplianceSuiteHelper(opts *FetchRawOptions, kuser common.KubeClientUser
 			Version:  common.CmpResourceVersion,
 			Resource: "compliancesuites",
 		},
+		IOStreams: streams,
 	}
 }
 
@@ -50,14 +53,14 @@ func (h *ComplianceSuiteHelper) Handle() error {
 		return err
 	}
 
-	fmt.Printf("Fetching results for %s scans: %s\n", h.name, strings.Join(scanNames, ", "))
+	fmt.Fprintf(h.Out, "Fetching results for %s scans: %s\n", h.name, strings.Join(scanNames, ", "))
 
 	for _, scanName := range scanNames {
 		scanDir := path.Join(h.opts.OutputPath, scanName)
 		if err := os.Mkdir(scanDir, 0700); err != nil {
 			return fmt.Errorf("Unable to create directory %s: %s", scanDir, err)
 		}
-		helper := NewComplianceScanHelper(h.opts, h.kuser, scanName, scanDir)
+		helper := NewComplianceScanHelper(h.opts, h.kuser, scanName, scanDir, h.IOStreams)
 		if err = helper.Handle(); err != nil {
 			return fmt.Errorf("Unable to process results from suite %s: %s", h.name, err)
 		}

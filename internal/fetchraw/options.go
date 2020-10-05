@@ -42,11 +42,11 @@ func (o *FetchRawOptions) Validate() error {
 
 	switch objtype {
 	case common.ScanSettingBinding:
-		o.Helper = NewScanSettingBindingHelper(o, o.Kuser, objname, o.OutputPath)
+		o.Helper = NewScanSettingBindingHelper(o, o.Kuser, objname, o.OutputPath, o.IOStreams)
 	case common.ComplianceSuite:
-		o.Helper = NewComplianceSuiteHelper(o, o.Kuser, objname, o.OutputPath)
+		o.Helper = NewComplianceSuiteHelper(o, o.Kuser, objname, o.OutputPath, o.IOStreams)
 	case common.ComplianceScan:
-		o.Helper = NewComplianceScanHelper(o, o.Kuser, objname, o.OutputPath)
+		o.Helper = NewComplianceScanHelper(o, o.Kuser, objname, o.OutputPath, o.IOStreams)
 	default:
 		return fmt.Errorf("Invalid object type for this command")
 	}

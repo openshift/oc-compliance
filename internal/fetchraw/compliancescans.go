@@ -12,6 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/kubectl/pkg/cmd/cp"
 
 	"github.com/JAORMX/oc-compliance/internal/common"
@@ -31,9 +32,10 @@ type ComplianceScanHelper struct {
 	kind       string
 	name       string
 	outputPath string
+	genericclioptions.IOStreams
 }
 
-func NewComplianceScanHelper(opts *FetchRawOptions, kuser common.KubeClientUser, name, outputPath string) common.ObjectHelper {
+func NewComplianceScanHelper(opts *FetchRawOptions, kuser common.KubeClientUser, name, outputPath string, streams genericclioptions.IOStreams) common.ObjectHelper {
 	return &ComplianceScanHelper{
 		opts:       opts,
 		kuser:      kuser,
@@ -50,6 +52,7 @@ func NewComplianceScanHelper(opts *FetchRawOptions, kuser common.KubeClientUser,
 			Version:  "v1",
 			Resource: "pods",
 		},
+		IOStreams: streams,
 	}
 }
 
@@ -120,7 +123,7 @@ func (h *ComplianceScanHelper) Handle() error {
 		return err
 	}
 
-	fmt.Printf("The raw compliance results are avaliable in the following directory: %s\n", h.outputPath)
+	fmt.Fprintf(h.Out, "The raw compliance results are avaliable in the following directory: %s\n", h.outputPath)
 
 	// delete extractor pod
 	var zeroGP int64 = 0
@@ -169,7 +172,7 @@ func (h *ComplianceScanHelper) waitForExtractorPod(ns, objName string) error {
 	}
 	// retry and ignore errors until timeout
 	var lastErr error
-	fmt.Printf("Fetching raw compliance results for scan '%s'.", h.name)
+	fmt.Fprintf(h.Out, "Fetching raw compliance results for scan '%s'.", h.name)
 	timeouterr := wait.Poll(common.RetryInterval, common.Timeout, func() (bool, error) {
 		podlist, err := h.kuser.Clientset().CoreV1().Pods(ns).List(context.TODO(), opts)
 		lastErr = err
@@ -186,10 +189,10 @@ func (h *ComplianceScanHelper) waitForExtractorPod(ns, objName string) error {
 		if pod.Status.Phase == corev1.PodRunning || pod.Status.Phase == corev1.PodSucceeded {
 			return true, nil
 		}
-		fmt.Print(".")
+		fmt.Fprint(h.Out, ".")
 		return false, nil
 	})
-	fmt.Print("\n")
+	fmt.Fprint(h.Out, "\n")
 
 	if timeouterr != nil {
 		return fmt.Errorf("The extractor pod wasn't ready before the timeout")

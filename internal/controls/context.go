@@ -29,7 +29,7 @@ func (o *ControlsContext) Validate() error {
 
 	switch objtype {
 	case common.Profile:
-		o.Helper = NewProfileHelper(o.Kuser, objname)
+		o.Helper = NewProfileHelper(o.Kuser, objname, o.IOStreams)
 	default:
 		return fmt.Errorf("Invalid object type for this command")
 	}

@@ -6,6 +6,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"github.com/JAORMX/oc-compliance/internal/common"
 )
@@ -15,9 +16,10 @@ type ScanSettingBindingHelper struct {
 	gvk   schema.GroupVersionResource
 	name  string
 	kind  string
+	genericclioptions.IOStreams
 }
 
-func NewScanSettingBindingHelper(kuser common.KubeClientUser, name string) common.ObjectHelper {
+func NewScanSettingBindingHelper(kuser common.KubeClientUser, name string, streams genericclioptions.IOStreams) common.ObjectHelper {
 	return &ScanSettingBindingHelper{
 		kuser: kuser,
 		name:  name,
@@ -27,6 +29,7 @@ func NewScanSettingBindingHelper(kuser common.KubeClientUser, name string) commo
 			Version:  common.CmpResourceVersion,
 			Resource: "scansettingbindings",
 		},
+		IOStreams: streams,
 	}
 }
 
@@ -38,6 +41,6 @@ func (h *ScanSettingBindingHelper) Handle() error {
 	}
 	suiteName := res.GetName()
 
-	helper := NewComplianceSuiteHelper(h.kuser, suiteName)
+	helper := NewComplianceSuiteHelper(h.kuser, suiteName, h.IOStreams)
 	return helper.Handle()
 }

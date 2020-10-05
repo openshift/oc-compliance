@@ -6,6 +6,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"github.com/JAORMX/oc-compliance/internal/common"
 )
@@ -21,9 +22,10 @@ type ComplianceScanHelper struct {
 	gvk   schema.GroupVersionResource
 	kind  string
 	name  string
+	genericclioptions.IOStreams
 }
 
-func NewComplianceScanHelper(kuser common.KubeClientUser, name string) common.ObjectHelper {
+func NewComplianceScanHelper(kuser common.KubeClientUser, name string, streams genericclioptions.IOStreams) common.ObjectHelper {
 	return &ComplianceScanHelper{
 		kuser: kuser,
 		name:  name,
@@ -33,6 +35,7 @@ func NewComplianceScanHelper(kuser common.KubeClientUser, name string) common.Ob
 			Version:  common.CmpResourceVersion,
 			Resource: "compliancescans",
 		},
+		IOStreams: streams,
 	}
 }
 
@@ -48,7 +51,7 @@ func (h *ComplianceScanHelper) Handle() error {
 	annotations[rescanAnnotation] = ""
 	scan.SetAnnotations(annotations)
 
-	fmt.Printf("Re-running scan '%s/%s'\n", h.kuser.GetNamespace(), h.name)
+	fmt.Fprintf(h.Out, "Re-running scan '%s/%s'\n", h.kuser.GetNamespace(), h.name)
 	_, err = h.kuser.DynamicClient().Resource(h.gvk).Namespace(h.kuser.GetNamespace()).Update(context.TODO(), scan, metav1.UpdateOptions{})
 	return err
 }
