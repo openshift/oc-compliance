@@ -3,13 +3,10 @@ package fetchfixes
 import (
 	"context"
 	"fmt"
-	"os"
-	"path"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	k8sserial "k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
@@ -52,25 +49,8 @@ func (h *ComplianceRemediationHelper) Handle() error {
 
 	yamlSerializer := k8sserial.NewYAMLSerializer(k8sserial.DefaultMetaFactory, nil, nil)
 
-	// Serialize the objects to yaml
-	path := path.Join(h.outputPath, h.name+".yaml")
-	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600)
+	path, err := persistObjectToYaml(r.GetName(), current, h.outputPath, yamlSerializer)
 	if err != nil {
-		return err
-	}
-
-	defer f.Close()
-
-	writer := json.YAMLFramer.NewFrameWriter(f)
-	// Needed for MachineConfigs
-	if current.GetName() == "" {
-		setFixName(current, r.GetName(), 0, false)
-	}
-	if err := yamlSerializer.Encode(current, writer); err != nil {
-		return fmt.Errorf("Couldn't serialize fix from rule '%s': %s", r.GetName(), err)
-	}
-
-	if err = f.Sync(); err != nil {
 		return err
 	}
 

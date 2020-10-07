@@ -3,13 +3,10 @@ package fetchfixes
 import (
 	"context"
 	"fmt"
-	"os"
-	"path"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/runtime/serializer/json"
 	k8sserial "k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
@@ -57,32 +54,20 @@ func (h *RuleHelper) Handle() error {
 
 	yamlSerializer := k8sserial.NewYAMLSerializer(k8sserial.DefaultMetaFactory, nil, nil)
 
-	// Serialize the objects to yaml
-	path := path.Join(h.outputPath, h.name+".yaml")
-	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600)
-	if err != nil {
-		return err
-	}
-
-	defer f.Close()
-
-	writer := json.YAMLFramer.NewFrameWriter(f)
 	needsSuffix := len(fixes) > 1
 	for idx, fix := range fixes {
-		// Needed for MachineConfigs
-		if fix.GetName() == "" {
-			setFixName(fix, r.GetName(), idx, needsSuffix)
+		fixName := r.GetName()
+		if needsSuffix {
+			fixName = fmt.Sprintf("%s-%d", r.GetName(), idx)
 		}
-		if err := yamlSerializer.Encode(fix, writer); err != nil {
-			return fmt.Errorf("Couldn't serialize fix from rule '%s': %s", r.GetName(), err)
+
+		path, err := persistObjectToYaml(fixName, fix, h.outputPath, yamlSerializer)
+		if err != nil {
+			return err
 		}
-	}
 
-	if err = f.Sync(); err != nil {
-		return err
+		fmt.Fprintf(h.Out, "Persisted rule fix to %s\n", path)
 	}
-
-	fmt.Fprintf(h.Out, "Persisted rule fix to %s\n", path)
 
 	return nil
 }
