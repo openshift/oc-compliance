@@ -49,7 +49,7 @@ func (h *ComplianceRemediationHelper) Handle() error {
 
 	yamlSerializer := k8sserial.NewYAMLSerializer(k8sserial.DefaultMetaFactory, nil, nil)
 
-	path, err := persistObjectToYaml(r.GetName(), current, h.outputPath, yamlSerializer)
+	path, err := common.PersistObjectToYamlFile(r.GetName(), current, h.outputPath, yamlSerializer)
 	if err != nil {
 		return err
 	}

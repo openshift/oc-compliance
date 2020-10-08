@@ -61,7 +61,7 @@ func (h *RuleHelper) Handle() error {
 			fixName = fmt.Sprintf("%s-%d", r.GetName(), idx)
 		}
 
-		path, err := persistObjectToYaml(fixName, fix, h.outputPath, yamlSerializer)
+		path, err := common.PersistObjectToYamlFile(fixName, fix, h.outputPath, yamlSerializer)
 		if err != nil {
 			return err
 		}

@@ -41,6 +41,16 @@ fulfil.
 $ oc compliance controls profile rhcos4-moderate
 ```
 
+### bind
+
+Creates a `ScanSettingBinding` or the given parameters
+
+```
+$ oc compliance bind -N my-binding profile/rhcos4-moderate
+```
+
+* `--dry-run` is also supported. This will print the yaml that's needed to create the object.
+
 Installing
 ----------
 

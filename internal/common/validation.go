@@ -13,8 +13,9 @@ const (
 	ComplianceRemediation
 	ScanSettingBinding
 	Profile
+	TailoredProfile
 	Rule
-	TypeUnkown
+	TypeUnknown
 )
 
 type ObjectReference struct {
@@ -38,11 +39,11 @@ func ValidateObjectArgs(args []string) (objref ObjectReference, err error) {
 	if len(args) == 1 {
 		objparts := strings.Split(args[0], "/")
 		if len(objparts) == 1 {
-			return ObjectReference{TypeUnkown, ""}, fmt.Errorf("Missing object name")
+			return ObjectReference{TypeUnknown, ""}, fmt.Errorf("Missing object type")
 		}
 
 		if len(objparts) > 2 {
-			return ObjectReference{TypeUnkown, ""}, fmt.Errorf("Malformed reference to object: %s", args[0])
+			return ObjectReference{TypeUnknown, ""}, fmt.Errorf("Malformed reference to object: %s", args[0])
 		}
 
 		rawobjtype = objparts[0]
@@ -54,6 +55,22 @@ func ValidateObjectArgs(args []string) (objref ObjectReference, err error) {
 
 	objref.Type, err = GetValidObjType(rawobjtype)
 	return
+}
+
+func ValidateManyObjectArgs(args []string) ([]ObjectReference, error) {
+	out := []ObjectReference{}
+	if len(args) < 1 {
+		return nil, fmt.Errorf("You need to specify at least one object")
+	}
+
+	for i := range args {
+		ref, err := ValidateObjectArgs(args[i : i+1])
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, ref)
+	}
+	return out, nil
 }
 
 func GetValidObjType(rawtype string) (ComplianceType, error) {
@@ -68,9 +85,11 @@ func GetValidObjType(rawtype string) (ComplianceType, error) {
 		return ComplianceRemediation, nil
 	case "Profiles", "Profile", "profiles", "profile":
 		return Profile, nil
+	case "TailoredProfiles", "TailoredProfile", "tailoredprofiles", "tailoredprofile":
+		return TailoredProfile, nil
 	case "Rules", "Rule", "rules", "rule":
 		return Rule, nil
 	default:
-		return TypeUnkown, fmt.Errorf("Unkown object type: %s", rawtype)
+		return TypeUnknown, fmt.Errorf("Unknown object type: %s", rawtype)
 	}
 }
