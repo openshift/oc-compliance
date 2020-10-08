@@ -35,18 +35,18 @@ func (o *FetchRawOptions) Validate() error {
 		return fmt.Errorf("The output path must be a directory")
 	}
 
-	objtype, objname, err := common.ValidateObjectArgs(o.Args)
+	objref, err := common.ValidateObjectArgs(o.Args)
 	if err != nil {
 		return err
 	}
 
-	switch objtype {
+	switch objref.Type {
 	case common.ScanSettingBinding:
-		o.Helper = NewScanSettingBindingHelper(o, o.Kuser, objname, o.OutputPath, o.IOStreams)
+		o.Helper = NewScanSettingBindingHelper(o, o.Kuser, objref.Name, o.OutputPath, o.IOStreams)
 	case common.ComplianceSuite:
-		o.Helper = NewComplianceSuiteHelper(o, o.Kuser, objname, o.OutputPath, o.IOStreams)
+		o.Helper = NewComplianceSuiteHelper(o, o.Kuser, objref.Name, o.OutputPath, o.IOStreams)
 	case common.ComplianceScan:
-		o.Helper = NewComplianceScanHelper(o, o.Kuser, objname, o.OutputPath, o.IOStreams)
+		o.Helper = NewComplianceScanHelper(o, o.Kuser, objref.Name, o.OutputPath, o.IOStreams)
 	default:
 		return fmt.Errorf("Invalid object type for this command")
 	}

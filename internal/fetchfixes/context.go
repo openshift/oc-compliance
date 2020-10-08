@@ -34,18 +34,18 @@ func (o *FetchFixesContext) Validate() error {
 		return fmt.Errorf("The output path must be a directory")
 	}
 
-	objtype, objname, err := common.ValidateObjectArgs(o.Args)
+	objref, err := common.ValidateObjectArgs(o.Args)
 	if err != nil {
 		return err
 	}
 
-	switch objtype {
+	switch objref.Type {
 	case common.Rule:
-		o.Helper = NewRuleHelper(o.Kuser, objname, o.OutputPath, o.IOStreams)
+		o.Helper = NewRuleHelper(o.Kuser, objref.Name, o.OutputPath, o.IOStreams)
 	case common.Profile:
-		o.Helper = NewProfileHelper(o.Kuser, objname, o.OutputPath, o.IOStreams)
+		o.Helper = NewProfileHelper(o.Kuser, objref.Name, o.OutputPath, o.IOStreams)
 	case common.ComplianceRemediation:
-		o.Helper = NewComplianceRemediationHelper(o.Kuser, objname, o.OutputPath, o.IOStreams)
+		o.Helper = NewComplianceRemediationHelper(o.Kuser, objref.Name, o.OutputPath, o.IOStreams)
 	default:
 		return fmt.Errorf("Invalid object type for this command")
 	}

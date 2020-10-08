@@ -22,14 +22,14 @@ func NewControlsContext(streams genericclioptions.IOStreams) *ControlsContext {
 
 // Validate ensures that all required arguments and flag values are provided
 func (o *ControlsContext) Validate() error {
-	objtype, objname, err := common.ValidateObjectArgs(o.Args)
+	objref, err := common.ValidateObjectArgs(o.Args)
 	if err != nil {
 		return err
 	}
 
-	switch objtype {
+	switch objref.Type {
 	case common.Profile:
-		o.Helper = NewProfileHelper(o.Kuser, objname, o.IOStreams)
+		o.Helper = NewProfileHelper(o.Kuser, objref.Name, o.IOStreams)
 	default:
 		return fmt.Errorf("Invalid object type for this command")
 	}

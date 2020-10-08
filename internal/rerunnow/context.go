@@ -39,18 +39,18 @@ func (o *RerunNowContext) Complete(cmd *cobra.Command, args []string) error {
 
 // Validate ensures that all required arguments and flag values are provided
 func (o *RerunNowContext) Validate() error {
-	objtype, objname, err := common.ValidateObjectArgs(o.Args)
+	objref, err := common.ValidateObjectArgs(o.Args)
 	if err != nil {
 		return err
 	}
 
-	switch objtype {
+	switch objref.Type {
 	case common.ScanSettingBinding:
-		o.Helper = NewScanSettingBindingHelper(o.Kuser, objname, o.IOStreams)
+		o.Helper = NewScanSettingBindingHelper(o.Kuser, objref.Name, o.IOStreams)
 	case common.ComplianceSuite:
-		o.Helper = NewComplianceSuiteHelper(o.Kuser, objname, o.IOStreams)
+		o.Helper = NewComplianceSuiteHelper(o.Kuser, objref.Name, o.IOStreams)
 	case common.ComplianceScan:
-		o.Helper = NewComplianceScanHelper(o.Kuser, objname, o.IOStreams)
+		o.Helper = NewComplianceScanHelper(o.Kuser, objref.Name, o.IOStreams)
 	default:
 		return fmt.Errorf("Invalid object type for this command")
 	}

@@ -17,7 +17,12 @@ const (
 	TypeUnkown
 )
 
-func ValidateObjectArgs(args []string) (objtype ComplianceType, objname string, err error) {
+type ObjectReference struct {
+	Type ComplianceType
+	Name string
+}
+
+func ValidateObjectArgs(args []string) (objref ObjectReference, err error) {
 
 	if len(args) < 1 {
 		err = fmt.Errorf("You need to specify at least one object")
@@ -31,23 +36,23 @@ func ValidateObjectArgs(args []string) (objtype ComplianceType, objname string, 
 
 	var rawobjtype string
 	if len(args) == 1 {
-		objref := strings.Split(args[0], "/")
-		if len(objref) == 1 {
-			return TypeUnkown, "", fmt.Errorf("Missing object name")
+		objparts := strings.Split(args[0], "/")
+		if len(objparts) == 1 {
+			return ObjectReference{TypeUnkown, ""}, fmt.Errorf("Missing object name")
 		}
 
-		if len(objref) > 2 {
-			return TypeUnkown, "", fmt.Errorf("Malformed reference to object: %s", args[0])
+		if len(objparts) > 2 {
+			return ObjectReference{TypeUnkown, ""}, fmt.Errorf("Malformed reference to object: %s", args[0])
 		}
 
-		rawobjtype = objref[0]
-		objname = objref[1]
+		rawobjtype = objparts[0]
+		objref.Name = objparts[1]
 	} else {
 		rawobjtype = args[0]
-		objname = args[1]
+		objref.Name = args[1]
 	}
 
-	objtype, err = GetValidObjType(rawobjtype)
+	objref.Type, err = GetValidObjType(rawobjtype)
 	return
 }
 
