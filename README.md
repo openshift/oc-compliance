@@ -56,54 +56,78 @@ $ oc compliance bind -N my-binding profile/rhcos4-moderate
 Gathers information in one place about a specific compliance result.
 
 ```
-$ oc compliance view-result ocp4-cis-scheduler-no-bind-address
-+---------------------+------------------------------------+
-|         KEY         |               VALUE                |
-+---------------------+------------------------------------+
-| title               | Ensure that the bind-address       |
-|                     | parameter is not used              |
-+---------------------+------------------------------------+
-| status              | PASS                               |
-+---------------------+------------------------------------+
-| severity            | medium                             |
-+---------------------+------------------------------------+
-| description         | The Scheduler API service          |
-|                     | which runs on port                 |
-|                     | 10251/TCP by default is used       |
-|                     | for&#xA;health and metrics         |
-|                     | information and is available       |
-|                     | without authentication             |
-|                     | or&#xA;encryption. As such         |
-|                     | it should only be bound            |
-|                     | to a localhost interface,          |
-|                     | to&#xA;minimize the                |
-|                     | cluster&#39;s attack surface.      |
-+---------------------+------------------------------------+
-| rationale           | In OpenShift 4, The Kubernetes     |
-|                     | Scheduler operator manages         |
-|                     | and updates the&#xA;Kubernetes     |
-|                     | Scheduler deployed on top of       |
-|                     | OpenShift. By default, the         |
-|                     | operator&#xA;exposes metrics       |
-|                     | via metrics service. The           |
-|                     | metrics are collected from         |
-|                     | the&#xA;Kubernetes Scheduler       |
-|                     | operator. Profiling data is        |
-|                     | sent to healthzPort,&#xA;the       |
-|                     | port of the localhost healthz      |
-|                     | endpoint. Changing this value      |
-|                     | may disrupt&#xA;components         |
-|                     | that monitor the kubelet           |
-|                     | health.                            |
-+---------------------+------------------------------------+
-| Avalailable Fix     | No                                 |
-+---------------------+------------------------------------+
-| Result Object Name  | ocp4-cis-scheduler-no-bind-address |
-+---------------------+------------------------------------+
-| Rule Object Name    | ocp4-scheduler-no-bind-address     |
-+---------------------+------------------------------------+
-| Remediation Created | No                                 |
-+---------------------+------------------------------------+
+oc compliance view-result rhcos4-e8-worker-sysctl-kernel-kptr-restrict
++----------------------+---------------------------------------------------------------------------------+
+|         KEY          |                                      VALUE                                      |
++----------------------+---------------------------------------------------------------------------------+
+| title                | Restrict Exposed Kernel                                                         |
+|                      | Pointer Addresses Access                                                        |
++----------------------+---------------------------------------------------------------------------------+
+| status               | PASS                                                                            |
++----------------------+---------------------------------------------------------------------------------+
+| severity             | medium                                                                          |
++----------------------+---------------------------------------------------------------------------------+
+| description          | <code>kernel.kptr_restrict</code><pre>$ sudo sysctl -w                          |
+|                      | kernel.kptr_restrict=1</pre><code>/etc/sysctl.d</code><pre>kernel.kptr_restrict |
+|                      | = 1</pre>:                                                                      |
++----------------------+---------------------------------------------------------------------------------+
+| rationale            | <code>seq_printf()</code>)                                                      |
+|                      | exposes&#xA;kernel writeable                                                    |
+|                      | structures that can contain                                                     |
+|                      | functions pointers. If a write                                                  |
+|                      | vulnereability occurs&#xA;in                                                    |
+|                      | the kernel allowing a                                                           |
+|                      | write access to any of this                                                     |
+|                      | structure, the kernel can be                                                    |
+|                      | compromise. This&#xA;option                                                     |
+|                      | disallow any program withtout                                                   |
+|                      | the CAP_SYSLOG capability from                                                  |
+|                      | getting the kernel pointers                                                     |
+|                      | addresses,&#xA;replacing them                                                   |
+|                      | with 0.                                                                         |
++----------------------+---------------------------------------------------------------------------------+
+| NIST-800-53 Controls | SC-30, SC-30(2), SC-30(5),                                                      |
+|                      | CM-6(a)                                                                         |
++----------------------+---------------------------------------------------------------------------------+
+| Avalailable Fix      | Yes                                                                             |
++----------------------+---------------------------------------------------------------------------------+
+| Fix Object           | ---                                                                             |
+|                      |                                                                                 |
+|                      | apiVersion:                                                                     |
+|                      | machineconfiguration.openshift.io/v1                                            |
+|                      |                                                                                 |
+|                      | kind: MachineConfig                                                             |
+|                      |                                                                                 |
+|                      | spec:                                                                           |
+|                      |                                                                                 |
+|                      |   config:                                                                       |
+|                      |                                                                                 |
+|                      |     ignition:                                                                   |
+|                      |                                                                                 |
+|                      |       version: 3.1.0                                                            |
+|                      |                                                                                 |
+|                      |     storage:                                                                    |
+|                      |                                                                                 |
+|                      |       files:                                                                    |
+|                      |                                                                                 |
+|                      |       - contents:                                                               |
+|                      |                                                                                 |
+|                      |           source:                                                               |
+|                      | data:,kernel.kptr_restrict%3D1                                                  |
+|                      |                                                                                 |
+|                      |         mode: 420                                                               |
+|                      |                                                                                 |
+|                      |         path:                                                                   |
+|                      | /etc/sysctl.d/75-sysctl_kernel_kptr_restrict.conf                               |
+|                      |                                                                                 |
+|                      |                                                                                 |
++----------------------+---------------------------------------------------------------------------------+
+| Result Object Name   | rhcos4-e8-worker-sysctl-kernel-kptr-restrict                                    |
++----------------------+---------------------------------------------------------------------------------+
+| Rule Object Name     | rhcos4-sysctl-kernel-kptr-restrict                                              |
++----------------------+---------------------------------------------------------------------------------+
+| Remediation Created  | No                                                                              |
++----------------------+---------------------------------------------------------------------------------+
 ```
 
 Installing

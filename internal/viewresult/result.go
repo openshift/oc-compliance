@@ -18,7 +18,8 @@ import (
 )
 
 const (
-	ruleAnnotationKey = "compliance.openshift.io/rule"
+	ruleAnnotationKey       = "compliance.openshift.io/rule"
+	controlAnnotationPrefix = "control.compliance.openshift.io/"
 )
 
 type ResultHelper struct {
@@ -89,6 +90,8 @@ func (h *ResultHelper) Handle() error {
 		return err
 	}
 
+	h.displayControls(rule)
+
 	if err := h.displayAvailableFixes(rule); err != nil {
 		return err
 	}
@@ -132,6 +135,23 @@ func (h *ResultHelper) stringToTable(obj *unstructured.Unstructured, keys ...str
 
 	h.table.Append([]string{lastKey, str})
 	return nil
+}
+
+func (h *ResultHelper) displayControls(rule *unstructured.Unstructured) {
+	annotations := rule.GetAnnotations()
+	if annotations == nil {
+		// non-fatal... but no controls to display
+		return
+	}
+
+	for key, value := range annotations {
+		if strings.HasPrefix(key, controlAnnotationPrefix) {
+			benchmark := key[len(controlAnnotationPrefix):]
+			bmtext := fmt.Sprintf("%s Controls", benchmark)
+			commaSeparatedControls := strings.ReplaceAll(value, ";", ", ")
+			h.table.Append([]string{bmtext, commaSeparatedControls})
+		}
+	}
 }
 
 func (h *ResultHelper) displayAvailableFixes(rule *unstructured.Unstructured) error {
