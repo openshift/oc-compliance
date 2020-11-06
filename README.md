@@ -51,6 +51,61 @@ $ oc compliance bind -N my-binding profile/rhcos4-moderate
 
 * `--dry-run` is also supported. This will print the yaml that's needed to create the object.
 
+### view-result
+
+Gathers information in one place about a specific compliance result.
+
+```
+$ oc compliance view-result ocp4-cis-scheduler-no-bind-address
++---------------------+------------------------------------+
+|         KEY         |               VALUE                |
++---------------------+------------------------------------+
+| title               | Ensure that the bind-address       |
+|                     | parameter is not used              |
++---------------------+------------------------------------+
+| status              | PASS                               |
++---------------------+------------------------------------+
+| severity            | medium                             |
++---------------------+------------------------------------+
+| description         | The Scheduler API service          |
+|                     | which runs on port                 |
+|                     | 10251/TCP by default is used       |
+|                     | for&#xA;health and metrics         |
+|                     | information and is available       |
+|                     | without authentication             |
+|                     | or&#xA;encryption. As such         |
+|                     | it should only be bound            |
+|                     | to a localhost interface,          |
+|                     | to&#xA;minimize the                |
+|                     | cluster&#39;s attack surface.      |
++---------------------+------------------------------------+
+| rationale           | In OpenShift 4, The Kubernetes     |
+|                     | Scheduler operator manages         |
+|                     | and updates the&#xA;Kubernetes     |
+|                     | Scheduler deployed on top of       |
+|                     | OpenShift. By default, the         |
+|                     | operator&#xA;exposes metrics       |
+|                     | via metrics service. The           |
+|                     | metrics are collected from         |
+|                     | the&#xA;Kubernetes Scheduler       |
+|                     | operator. Profiling data is        |
+|                     | sent to healthzPort,&#xA;the       |
+|                     | port of the localhost healthz      |
+|                     | endpoint. Changing this value      |
+|                     | may disrupt&#xA;components         |
+|                     | that monitor the kubelet           |
+|                     | health.                            |
++---------------------+------------------------------------+
+| Avalailable Fix     | No                                 |
++---------------------+------------------------------------+
+| Result Object Name  | ocp4-cis-scheduler-no-bind-address |
++---------------------+------------------------------------+
+| Rule Object Name    | ocp4-scheduler-no-bind-address     |
++---------------------+------------------------------------+
+| Remediation Created | No                                 |
++---------------------+------------------------------------+
+```
+
 Installing
 ----------
 

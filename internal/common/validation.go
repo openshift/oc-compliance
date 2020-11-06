@@ -15,6 +15,7 @@ const (
 	Profile
 	TailoredProfile
 	Rule
+	ComplianceCheckResult
 	TypeUnknown
 )
 
@@ -89,6 +90,8 @@ func GetValidObjType(rawtype string) (ComplianceType, error) {
 		return TailoredProfile, nil
 	case "Rules", "Rule", "rules", "rule":
 		return Rule, nil
+	case "ComplianceCheckResults", "ComplianceCheckResult", "compliancecheckresults", "compliancecheckresult":
+		return ComplianceCheckResult, nil
 	default:
 		return TypeUnknown, fmt.Errorf("Unknown object type: %s", rawtype)
 	}
