@@ -216,6 +216,8 @@ func (h *ResultHelper) getRemediation(obj *unstructured.Unstructured) (*unstruct
 	if err != nil && !errors.IsNotFound(err) {
 		return nil, err
 	}
+	// TODO(jaosorior): Handle remediations with no matching name by iterating
+	// and checking owner references
 	return rem, nil
 }
 
