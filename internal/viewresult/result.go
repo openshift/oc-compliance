@@ -1,6 +1,7 @@
 package viewresult
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"strings"
@@ -9,6 +10,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	k8sserial "k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"github.com/JAORMX/oc-compliance/internal/common"
@@ -31,6 +33,8 @@ type ResultHelper struct {
 func NewResultHelper(kuser common.KubeClientUser, name string, streams genericclioptions.IOStreams) common.ObjectHelper {
 	table := tablewriter.NewWriter(streams.Out)
 	table.SetHeader([]string{"Key", "Value"})
+	table.SetAutoWrapText(true)
+	table.SetReflowDuringAutoWrap(false)
 	table.SetAutoMergeCells(true)
 	table.SetRowLine(true)
 
@@ -85,14 +89,8 @@ func (h *ResultHelper) Handle() error {
 		return err
 	}
 
-	fixes, found, err := unstructured.NestedSlice(rule.Object, "availableFixes")
-	if err != nil {
-		return fmt.Errorf("Unable to get %s of %s/%s of type %s: %s", "avaliableFixes", rule.GetNamespace(), rule.GetName(), rule.GetKind(), err)
-	}
-	if found && fixes != nil {
-		h.table.Append([]string{"Avalailable Fix", "Yes"})
-	} else {
-		h.table.Append([]string{"Avalailable Fix", "No"})
+	if err := h.displayAvailableFixes(rule); err != nil {
+		return err
 	}
 
 	h.table.Append([]string{"Result Object Name", res.GetName()})
@@ -133,6 +131,39 @@ func (h *ResultHelper) stringToTable(obj *unstructured.Unstructured, keys ...str
 	}
 
 	h.table.Append([]string{lastKey, str})
+	return nil
+}
+
+func (h *ResultHelper) displayAvailableFixes(rule *unstructured.Unstructured) error {
+	fixes, found, err := unstructured.NestedSlice(rule.Object, "availableFixes")
+	if err != nil {
+		return fmt.Errorf("Unable to get %s of %s/%s of type %s: %s", "avaliableFixes", rule.GetNamespace(), rule.GetName(), rule.GetKind(), err)
+	}
+	if found && fixes != nil {
+		h.table.Append([]string{"Avalailable Fix", "Yes"})
+		for _, fixObjRaw := range fixes {
+			fixObj, ok := fixObjRaw.(map[string]interface{})
+			if !ok {
+				return fmt.Errorf("Unable to parse %s of %s/%s of type %s: %s", "fixObject", rule.GetNamespace(), rule.GetName(), rule.GetKind(), err)
+			}
+			fix, found, err := unstructured.NestedMap(fixObj, "fixObject")
+			if err != nil {
+				return fmt.Errorf("Unable to get %s of %s/%s of type %s: %s", "fixObject", rule.GetNamespace(), rule.GetName(), rule.GetKind(), err)
+			}
+			if !found {
+				return fmt.Errorf("%s/%s of type %s: has no '%s'", rule.GetNamespace(), rule.GetName(), rule.GetKind(), "fixObject")
+			}
+
+			yamlSerializer := k8sserial.NewYAMLSerializer(k8sserial.DefaultMetaFactory, nil, nil)
+			objToPersist := &unstructured.Unstructured{Object: fix}
+			buf := bytes.Buffer{}
+			common.PersistObjectToYaml("", objToPersist, &buf, yamlSerializer)
+			h.table.Append([]string{"Fix Object", buf.String()})
+		}
+	} else {
+		h.table.Append([]string{"Avalailable Fix", "No"})
+	}
+
 	return nil
 }
 
