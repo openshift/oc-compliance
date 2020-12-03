@@ -56,6 +56,7 @@ compliance scan to a specified directory.`,
 	}
 
 	cmd.Flags().StringVarP(&o.OutputPath, "output", "o", ".", "The path where you want to persist the raw results to")
+	cmd.Flags().BoolVar(&o.HTML, "html", false, "Whether to render the raw results to HTML (Requires the `oscap` command)")
 	o.ConfigFlags.AddFlags(cmd.Flags())
 
 	return cmd

@@ -3,7 +3,11 @@ package fetchraw
 import (
 	"context"
 	"fmt"
+	"os"
+	"os/exec"
+	"path/filepath"
 	"strings"
+	"sync"
 
 	corev1 "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
@@ -31,15 +35,17 @@ type ComplianceScanHelper struct {
 	kind       string
 	name       string
 	outputPath string
+	html       bool
 	genericclioptions.IOStreams
 }
 
-func NewComplianceScanHelper(kuser common.KubeClientUser, name, outputPath string, streams genericclioptions.IOStreams) common.ObjectHelper {
+func NewComplianceScanHelper(kuser common.KubeClientUser, name, outputPath string, html bool, streams genericclioptions.IOStreams) common.ObjectHelper {
 	return &ComplianceScanHelper{
 		kuser:      kuser,
 		name:       name,
 		kind:       "ComplianceScan",
 		outputPath: outputPath,
+		html:       html,
 		gvk: schema.GroupVersionResource{
 			Group:    common.CmpAPIGroup,
 			Version:  common.CmpResourceVersion,
@@ -125,9 +131,17 @@ func (h *ComplianceScanHelper) Handle() error {
 
 	// delete extractor pod
 	var zeroGP int64 = 0
-	return h.kuser.Clientset().CoreV1().Pods(rsnamespace).Delete(context.TODO(), extractorPod.GetName(), metav1.DeleteOptions{
+	err = h.kuser.Clientset().CoreV1().Pods(rsnamespace).Delete(context.TODO(), extractorPod.GetName(), metav1.DeleteOptions{
 		GracePeriodSeconds: &zeroGP,
 	})
+	if err != nil {
+		return err
+	}
+
+	if h.html {
+		return h.generateHTMLReports()
+	}
+	return nil
 }
 
 func (h *ComplianceScanHelper) getScanPhase(obj *unstructured.Unstructured) (string, error) {
@@ -202,6 +216,56 @@ func (h *ComplianceScanHelper) waitForExtractorPod(ns, objName string) error {
 	return nil
 }
 
+func (h *ComplianceScanHelper) generateHTMLReports() error {
+	var wg sync.WaitGroup
+	done := make(chan bool)
+	errors := make(chan error)
+	reportFuncs := []func(){}
+	// We always return nil here
+	filepath.Walk(h.outputPath, func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() {
+			return nil
+		}
+		if !hasExpectedARFExtension(path) {
+			return nil
+		}
+		reportf := func() {
+			reportFile := replaceARFforHTMLExt(path)
+			reportcmd := exec.Command("oscap", "xccdf", "generate", "report",
+				"--output", reportFile, path)
+			out, err := reportcmd.CombinedOutput()
+			if err != nil {
+				fmt.Fprintf(h.Out, string(out))
+				errors <- err
+			} else {
+				fmt.Fprintf(h.Out, "An HTML report is available at %s\n", reportFile)
+			}
+			wg.Done()
+		}
+		reportFuncs = append(reportFuncs, reportf)
+		return nil
+	})
+
+	wg.Add(len(reportFuncs))
+	for _, f := range reportFuncs {
+		go f()
+	}
+
+	go func() {
+		wg.Wait()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		break
+	case err := <-errors:
+		close(errors)
+		return err
+	}
+	return nil
+}
+
 func getPVCExtractorPodLabels(objName string) map[string]string {
 	return map[string]string{
 		cmdLabelKey:     "",
@@ -247,4 +311,18 @@ func getPVCExtractorPod(objName, ns, claimName string) *corev1.Pod {
 			},
 		},
 	}
+}
+
+func hasExpectedARFExtension(path string) bool {
+	return strings.HasSuffix(path, ".xml") || strings.HasSuffix(path, ".xml.bzip2")
+}
+
+func replaceARFforHTMLExt(path string) string {
+	if strings.HasSuffix(path, ".xml.bzip2") {
+		return strings.ReplaceAll(path, ".xml.bzip2", ".html")
+	}
+	if strings.HasSuffix(path, ".xml") {
+		return strings.ReplaceAll(path, ".xml", ".html")
+	}
+	return path + ".html"
 }
