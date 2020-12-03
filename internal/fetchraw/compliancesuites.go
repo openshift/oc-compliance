@@ -15,7 +15,6 @@ import (
 )
 
 type ComplianceSuiteHelper struct {
-	opts       *FetchRawOptions
 	kuser      common.KubeClientUser
 	gvk        schema.GroupVersionResource
 	name       string
@@ -24,9 +23,8 @@ type ComplianceSuiteHelper struct {
 	genericclioptions.IOStreams
 }
 
-func NewComplianceSuiteHelper(opts *FetchRawOptions, kuser common.KubeClientUser, name, outputPath string, streams genericclioptions.IOStreams) common.ObjectHelper {
+func NewComplianceSuiteHelper(kuser common.KubeClientUser, name, outputPath string, streams genericclioptions.IOStreams) common.ObjectHelper {
 	return &ComplianceSuiteHelper{
-		opts:       opts,
 		kuser:      kuser,
 		name:       name,
 		kind:       "ComplianceSuite",
@@ -56,11 +54,11 @@ func (h *ComplianceSuiteHelper) Handle() error {
 	fmt.Fprintf(h.Out, "Fetching results for %s scans: %s\n", h.name, strings.Join(scanNames, ", "))
 
 	for _, scanName := range scanNames {
-		scanDir := path.Join(h.opts.OutputPath, scanName)
+		scanDir := path.Join(h.outputPath, scanName)
 		if err := os.Mkdir(scanDir, 0700); err != nil {
 			return fmt.Errorf("Unable to create directory %s: %s", scanDir, err)
 		}
-		helper := NewComplianceScanHelper(h.opts, h.kuser, scanName, scanDir, h.IOStreams)
+		helper := NewComplianceScanHelper(h.kuser, scanName, scanDir, h.IOStreams)
 		if err = helper.Handle(); err != nil {
 			return fmt.Errorf("Unable to process results from suite %s: %s", h.name, err)
 		}

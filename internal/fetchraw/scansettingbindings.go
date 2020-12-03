@@ -12,7 +12,6 @@ import (
 )
 
 type ScanSettingBindingHelper struct {
-	opts       *FetchRawOptions
 	kuser      common.KubeClientUser
 	gvk        schema.GroupVersionResource
 	name       string
@@ -21,9 +20,8 @@ type ScanSettingBindingHelper struct {
 	genericclioptions.IOStreams
 }
 
-func NewScanSettingBindingHelper(opts *FetchRawOptions, kuser common.KubeClientUser, name, outputPath string, streams genericclioptions.IOStreams) common.ObjectHelper {
+func NewScanSettingBindingHelper(kuser common.KubeClientUser, name, outputPath string, streams genericclioptions.IOStreams) common.ObjectHelper {
 	return &ScanSettingBindingHelper{
-		opts:       opts,
 		kuser:      kuser,
 		name:       name,
 		kind:       "ScanSettingBinding",
@@ -45,6 +43,6 @@ func (h *ScanSettingBindingHelper) Handle() error {
 	}
 	suiteName := res.GetName()
 
-	helper := NewComplianceSuiteHelper(h.opts, h.kuser, suiteName, h.outputPath, h.IOStreams)
+	helper := NewComplianceSuiteHelper(h.kuser, suiteName, h.outputPath, h.IOStreams)
 	return helper.Handle()
 }

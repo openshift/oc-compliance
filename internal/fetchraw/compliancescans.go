@@ -25,7 +25,6 @@ const (
 )
 
 type ComplianceScanHelper struct {
-	opts       *FetchRawOptions
 	kuser      common.KubeClientUser
 	gvk        schema.GroupVersionResource
 	podgvk     schema.GroupVersionResource
@@ -35,9 +34,8 @@ type ComplianceScanHelper struct {
 	genericclioptions.IOStreams
 }
 
-func NewComplianceScanHelper(opts *FetchRawOptions, kuser common.KubeClientUser, name, outputPath string, streams genericclioptions.IOStreams) common.ObjectHelper {
+func NewComplianceScanHelper(kuser common.KubeClientUser, name, outputPath string, streams genericclioptions.IOStreams) common.ObjectHelper {
 	return &ComplianceScanHelper{
-		opts:       opts,
 		kuser:      kuser,
 		name:       name,
 		kind:       "ComplianceScan",
@@ -106,7 +104,7 @@ func (h *ComplianceScanHelper) Handle() error {
 		return err
 	}
 
-	cpopts := cp.NewCopyOptions(h.opts.IOStreams)
+	cpopts := cp.NewCopyOptions(h.IOStreams)
 	cpopts.Namespace = rsnamespace
 	cpopts.ClientConfig = h.kuser.GetConfig()
 	cpopts.Clientset = h.kuser.Clientset()
