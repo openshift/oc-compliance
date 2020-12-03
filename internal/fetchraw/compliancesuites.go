@@ -20,15 +20,17 @@ type ComplianceSuiteHelper struct {
 	name       string
 	kind       string
 	outputPath string
+	html       bool
 	genericclioptions.IOStreams
 }
 
-func NewComplianceSuiteHelper(kuser common.KubeClientUser, name, outputPath string, streams genericclioptions.IOStreams) common.ObjectHelper {
+func NewComplianceSuiteHelper(kuser common.KubeClientUser, name, outputPath string, html bool, streams genericclioptions.IOStreams) common.ObjectHelper {
 	return &ComplianceSuiteHelper{
 		kuser:      kuser,
 		name:       name,
 		kind:       "ComplianceSuite",
 		outputPath: outputPath,
+		html:       html,
 		gvk: schema.GroupVersionResource{
 			Group:    common.CmpAPIGroup,
 			Version:  common.CmpResourceVersion,
@@ -58,7 +60,7 @@ func (h *ComplianceSuiteHelper) Handle() error {
 		if err := os.Mkdir(scanDir, 0700); err != nil {
 			return fmt.Errorf("Unable to create directory %s: %s", scanDir, err)
 		}
-		helper := NewComplianceScanHelper(h.kuser, scanName, scanDir, h.IOStreams)
+		helper := NewComplianceScanHelper(h.kuser, scanName, scanDir, h.html, h.IOStreams)
 		if err = helper.Handle(); err != nil {
 			return fmt.Errorf("Unable to process results from suite %s: %s", h.name, err)
 		}
