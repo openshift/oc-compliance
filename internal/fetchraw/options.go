@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/pkg/browser"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"github.com/JAORMX/oc-compliance/internal/common"
@@ -64,5 +65,11 @@ func (o *FetchRawOptions) Validate() error {
 }
 
 func (o *FetchRawOptions) Run() error {
-	return o.Helper.Handle()
+	if err := o.Helper.Handle(); err != nil {
+		return err
+	}
+	if o.HTML {
+		browser.OpenFile(o.OutputPath)
+	}
+	return nil
 }
