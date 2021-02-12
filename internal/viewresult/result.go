@@ -139,7 +139,7 @@ func (h *ResultHelper) stringToTableEx(obj *unstructured.Unstructured, mustExist
 		return fmt.Errorf("%s/%s of type %s: has no '%s'", obj.GetNamespace(), obj.GetName(), obj.GetKind(), lastKey)
 	}
 
-	h.table.Append([]string{lastKey, str})
+	h.table.Append([]string{strings.Title(lastKey), str})
 	return nil
 }
 
