@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	goerrors "github.com/pkg/errors"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -203,11 +204,11 @@ func (h *ResultHelper) getRule(res *unstructured.Unstructured, ruleRef string) (
 	spi := scanProfileID{scanDSFile, scanProfileXCCDFID}
 	suite, err := getControllerOf(scan, h.kuser)
 	if err != nil {
-		return nil, err
+		return nil, goerrors.Wrapf(err, "cannot get a suite that owns scan %s", scan.GetName())
 	}
 	binding, err := getControllerOf(suite, h.kuser)
 	if err != nil {
-		return nil, err
+		return nil, goerrors.Wrapf(err, "cannot get a binding that owns suite %s", suite.GetName())
 	}
 	profs, err := h.getProfiles(binding)
 	if err != nil {
@@ -428,7 +429,7 @@ func (spi scanProfileID) IsEqual(other scanProfileID) bool {
 func getControllerOf(res *unstructured.Unstructured, k common.KubeClientUser) (*unstructured.Unstructured, error) {
 	ctrl := metav1.GetControllerOf(res)
 	if ctrl == nil {
-		return nil, fmt.Errorf("The result had no owner")
+		return nil, fmt.Errorf("the object had no owner")
 	}
 
 	gvr := getGVRFromAPIVersionAndKind(ctrl.APIVersion, ctrl.Kind)
