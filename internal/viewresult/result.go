@@ -90,6 +90,9 @@ func (h *ResultHelper) Handle() error {
 	if err := h.stringToTable(rule, "rationale"); err != nil {
 		return err
 	}
+	if err := h.stringToTableIfExists(res, "instructions"); err != nil {
+		return err
+	}
 
 	h.displayControls(rule)
 
@@ -124,18 +127,29 @@ func (h *ResultHelper) Handle() error {
 	return nil
 }
 
-func (h *ResultHelper) stringToTable(obj *unstructured.Unstructured, keys ...string) error {
+func (h *ResultHelper) stringToTableEx(obj *unstructured.Unstructured, mustExist bool, keys ...string) error {
 	str, found, err := unstructured.NestedString(obj.Object, keys...)
 	lastKey := keys[len(keys)-1]
 	if err != nil {
 		return fmt.Errorf("Unable to get %s of %s/%s of type %s: %s", lastKey, obj.GetNamespace(), obj.GetName(), obj.GetKind(), err)
 	}
 	if !found {
+		if !mustExist {
+			return nil
+		}
 		return fmt.Errorf("%s/%s of type %s: has no '%s'", obj.GetNamespace(), obj.GetName(), obj.GetKind(), lastKey)
 	}
 
-	h.table.Append([]string{lastKey, str})
+	h.table.Append([]string{strings.Title(lastKey), str})
 	return nil
+}
+
+func (h *ResultHelper) stringToTable(obj *unstructured.Unstructured, keys ...string) error {
+	return h.stringToTableEx(obj, true, keys...)
+}
+
+func (h *ResultHelper) stringToTableIfExists(obj *unstructured.Unstructured, keys ...string) error {
+	return h.stringToTableEx(obj, false, keys...)
 }
 
 func (h *ResultHelper) displayControls(rule *unstructured.Unstructured) {
