@@ -18,6 +18,11 @@ $(BIN): $(BINDIR) $(SRC)
 install: build
 	which oc | xargs dirname | xargs -n1 cp $(BIN)
 
+
+.PHONY: e2e
+e2e: install
+	go test ./tests/e2e -v --ginkgo.v
+
 # Helper targets
 
 $(BINDIR):
