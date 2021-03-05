@@ -76,6 +76,11 @@ spec:
 	By("Waiting for Compliance Operator")
 
 	ocWaitFor("condition=available", "deployment", "compliance-operator")
+	time.Sleep(90 * time.Second)
+
+	By("Waiting for ProfileBundles")
+	ocWaitLongFor("condition=ready", "profilebundle", "ocp4")
+	ocWaitLongFor("condition=ready", "profilebundle", "rhcos4")
 })
 
 var _ = AfterSuite(func() {

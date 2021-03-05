@@ -13,6 +13,7 @@ import (
 )
 
 const defaultOCWaitTimeout = "--timeout=60s"
+const defaultOCLongWaitTimeout = "--timeout=10m"
 
 func do(cmd string, args ...string) string {
 	execcmd := exec.Command(cmd, args...)
@@ -40,6 +41,10 @@ func ocWaitFor(args ...string) string {
 	return oc(append([]string{"wait", defaultOCWaitTimeout, "--for"}, args...)...)
 }
 
+func ocWaitLongFor(args ...string) string {
+	return oc(append([]string{"wait", defaultOCLongWaitTimeout, "--for"}, args...)...)
+}
+
 // Will set up a scan with the given name and wait for it to be done.
 // The scan will be done for the CIS benchmark.
 func withCISScan(scan string) {
@@ -47,13 +52,8 @@ func withCISScan(scan string) {
 	oc("compliance", "bind", "--name", scan, "profile/ocp4-cis")
 
 	time.Sleep(5 * time.Second)
+	ocWaitFor("condition=ready", "scansettingbinding", scan)
 
 	By("Waiting for scan to be ready")
-	for {
-		phase := oc("get", "compliancesuites", scan, "-o", "jsonpath={.status.phase}")
-		if strings.EqualFold(phase, "done") {
-			break
-		}
-		time.Sleep(2 * time.Second)
-	}
+	ocWaitLongFor("condition=ready", "compliancesuite", scan)
 }
