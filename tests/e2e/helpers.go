@@ -1,6 +1,7 @@
 package e2e
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -37,6 +38,11 @@ func ocApplyFromString(obj string) string {
 	return oc("apply", "-f", tmpfile.Name())
 }
 
+func ocApplyFromStringf(obj string, args ...interface{}) string {
+	formatted := fmt.Sprintf(obj, args...)
+	return ocApplyFromString(formatted)
+}
+
 func ocWaitFor(args ...string) string {
 	return oc(append([]string{"wait", defaultOCWaitTimeout, "--for"}, args...)...)
 }
@@ -49,7 +55,20 @@ func ocWaitLongFor(args ...string) string {
 // The scan will be done for the CIS benchmark.
 func withCISScan(scan string) {
 	By("Creating a ScanSettingBinding for this test")
-	oc("compliance", "bind", "--name", scan, "profile/ocp4-cis")
+	ocApplyFromStringf(`---
+apiVersion: compliance.openshift.io/v1alpha1
+kind: ScanSettingBinding
+metadata:
+  name: %s
+profiles:
+- apiGroup: compliance.openshift.io/v1alpha1
+  kind: Profile
+  name: ocp4-cis
+settingsRef:
+  apiGroup: compliance.openshift.io/v1alpha1
+  kind: ScanSetting
+  name: default
+`, scan)
 
 	time.Sleep(5 * time.Second)
 	ocWaitFor("condition=ready", "scansettingbinding", scan)
