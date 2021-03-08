@@ -5,6 +5,8 @@ export GOFLAGS=-mod=vendor
 
 SRC=$(shell find . -name *.go)
 
+OSCAP=$(shell which oscap || echo /usr/bin/oscap)
+
 .PHONY: all
 all: build
 
@@ -20,10 +22,17 @@ install: build
 
 
 .PHONY: e2e
-e2e: install
+e2e: install dependencies
 	go test ./tests/e2e -v --ginkgo.v
+
 
 # Helper targets
 
 $(BINDIR):
 	mkdir -p $(BINDIR)
+
+.PHONY: dependencies
+dependencies: $(OSCAP)
+
+$(OSCAP):
+	yum install -y openscap
