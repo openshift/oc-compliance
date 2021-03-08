@@ -5,13 +5,10 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
-	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
-
-const ScanDoneTimeout = 5 * time.Minute
 
 var _ = Describe("fetch-raw", func() {
 	Context("With a pre-existing profile being scanned", func() {
@@ -23,7 +20,7 @@ var _ = Describe("fetch-raw", func() {
 			dir, tmpErr = ioutil.TempDir("", "oc-compliance-fetch-raw")
 			By(fmt.Sprintf("Created temporary directory for this test: %s", dir))
 			Expect(tmpErr).ShouldNot(HaveOccurred())
-		}, float64(ScanDoneTimeout))
+		}, float64(scanDoneTimeout))
 
 		AfterEach(func() {
 			if !CurrentGinkgoTestDescription().Failed {

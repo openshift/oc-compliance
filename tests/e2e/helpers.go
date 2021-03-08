@@ -15,6 +15,8 @@ import (
 
 const defaultOCWaitTimeout = "--timeout=60s"
 const defaultOCLongWaitTimeout = "--timeout=10m"
+const scanDoneTimeout = 5 * time.Minute
+const defaultSleep = 5 * time.Second
 
 func do(cmd string, args ...string) string {
 	execcmd := exec.Command(cmd, args...)
@@ -70,7 +72,7 @@ settingsRef:
   name: default
 `, scan)
 
-	time.Sleep(5 * time.Second)
+	time.Sleep(defaultSleep)
 	ocWaitFor("condition=ready", "scansettingbinding", scan)
 
 	By("Waiting for scan to be ready")
