@@ -13,7 +13,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-const defaultOCWaitTimeout = "--timeout=60s"
+const defaultOCWaitTimeout = "--timeout=90s"
 const defaultOCLongWaitTimeout = "--timeout=10m"
 const scanDoneTimeout = 5 * time.Minute
 const defaultSleep = 5 * time.Second
