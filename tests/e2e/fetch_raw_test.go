@@ -52,7 +52,7 @@ var _ = Describe("fetch-raw", func() {
 
 		assertFetchRawWithHTMLWorks := func(objtype, objname, wdir string) {
 			By("Calling oc compliance fetch-raw with --html flag")
-			oc("compliance", "fetch-raw", objtype, objname, "-o", wdir)
+			oc("compliance", "fetch-raw", "--html", objtype, objname, "-o", wdir)
 
 			By("Getting HTML files from scan")
 			dirraw := do("find", wdir, "-name", "*.html")
