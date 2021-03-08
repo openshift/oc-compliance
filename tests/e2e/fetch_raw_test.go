@@ -1,6 +1,7 @@
 package e2e
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -14,14 +15,22 @@ const ScanDoneTimeout = 5 * time.Minute
 
 var _ = Describe("fetch-raw", func() {
 	Context("With a pre-existing profile being scanned", func() {
-		var cwd string
+		var dir string
 
 		BeforeEach(func() {
 			withCISScan("fetch-raw-scan")
 			var tmpErr error
-			cwd, tmpErr = ioutil.TempDir("", "oc-compliance-fetch-raw")
+			dir, tmpErr = ioutil.TempDir("", "oc-compliance-fetch-raw")
+			By(fmt.Sprintf("Created temporary directory for this test: %s", dir))
 			Expect(tmpErr).ShouldNot(HaveOccurred())
 		}, float64(ScanDoneTimeout))
+
+		AfterEach(func() {
+			if !CurrentGinkgoTestDescription().Failed {
+				By(fmt.Sprintf("Removing temporary directory for this test: %s", dir))
+				os.RemoveAll(dir)
+			}
+		})
 
 		assertFilesOutput := func(dirs []string) {
 			By("Assert we got results")
@@ -36,7 +45,7 @@ var _ = Describe("fetch-raw", func() {
 			oc("compliance", "fetch-raw", objtype, objname, "-o", wdir)
 
 			By("Getting items from scan")
-			dirraw := do("ls", wdir)
+			dirraw := do("find", wdir, "-name", "*.xml.bzip2")
 			dirs := strings.Split(dirraw, "\n")
 			assertFilesOutput(dirs)
 		}
@@ -51,47 +60,33 @@ var _ = Describe("fetch-raw", func() {
 			assertFilesOutput(dirs)
 		}
 
-		When("Fetching objects to directories", func() {
-			var dir string
-
-			BeforeEach(func() {
-				var tmpErr error
-				dir, tmpErr = ioutil.TempDir(cwd, "fetching-obj")
-				Expect(tmpErr).ShouldNot(HaveOccurred())
+		When("using ScanSettingBinding", func() {
+			It("Fetches the results to the appropriate directory", func() {
+				assertFetchRawWorks("scansettingbinding", "fetch-raw-scan", dir)
 			})
 
-			AfterEach(func() {
-				os.RemoveAll(dir)
+			It("Fetches the HTML results to the appropriate directory", func() {
+				assertFetchRawWithHTMLWorks("scansettingbinding", "fetch-raw-scan", dir)
+			})
+		})
+
+		When("using ComplianceSuite", func() {
+			It("Fetches the results to the appropriate directory", func() {
+				assertFetchRawWorks("compliancesuite", "fetch-raw-scan", dir)
 			})
 
-			When("using ScanSettingBinding", func() {
-				It("Fetches the results to the appropriate directory", func() {
-					assertFetchRawWorks("scansettingbinding", "fetch-raw-scan", dir)
-				})
+			It("Fetches the HTML results to the appropriate directory", func() {
+				assertFetchRawWithHTMLWorks("compliancesuite", "fetch-raw-scan", dir)
+			})
+		})
 
-				It("Fetches the HTML results to the appropriate directory", func() {
-					assertFetchRawWithHTMLWorks("scansettingbinding", "fetch-raw-scan", dir)
-				})
+		When("using ComplianceScan", func() {
+			It("Fetches the results to the appropriate directory", func() {
+				assertFetchRawWorks("compliancescan", "ocp4-cis", dir)
 			})
 
-			When("using ComplianceSuite", func() {
-				It("Fetches the results to the appropriate directory", func() {
-					assertFetchRawWorks("compliancesuite", "fetch-raw-scan", dir)
-				})
-
-				It("Fetches the HTML results to the appropriate directory", func() {
-					assertFetchRawWithHTMLWorks("compliancesuite", "fetch-raw-scan", dir)
-				})
-			})
-
-			When("using ComplianceScan", func() {
-				It("Fetches the results to the appropriate directory", func() {
-					assertFetchRawWorks("compliancescan", "ocp4-cis", dir)
-				})
-
-				It("Fetches the HTML results to the appropriate directory", func() {
-					assertFetchRawWithHTMLWorks("compliancescan", "ocp4-cis", dir)
-				})
+			It("Fetches the HTML results to the appropriate directory", func() {
+				assertFetchRawWithHTMLWorks("compliancescan", "ocp4-cis", dir)
 			})
 		})
 
