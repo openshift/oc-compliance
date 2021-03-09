@@ -108,9 +108,7 @@ func ocWaitLongFor(args ...string) string {
 	return oc(append([]string{"wait", defaultOCLongWaitTimeout, "--for"}, args...)...)
 }
 
-// Will set up a scan with the given name and wait for it to be done.
-// The scan will be done for the CIS benchmark.
-func withCISScan(scan string) {
+func withScan(scan, profile string) {
 	By("Creating a ScanSettingBinding for this test")
 	ocApplyFromStringf(`---
 apiVersion: compliance.openshift.io/v1alpha1
@@ -120,16 +118,26 @@ metadata:
 profiles:
 - apiGroup: compliance.openshift.io/v1alpha1
   kind: Profile
-  name: ocp4-cis
+  name: ocp4-%s
 settingsRef:
   apiGroup: compliance.openshift.io/v1alpha1
   kind: ScanSetting
   name: default
-`, scan)
+`, scan, profile)
 
 	time.Sleep(defaultSleep)
 	ocWaitFor("condition=ready", "scansettingbinding", scan)
 
 	By("Waiting for scan to be ready")
 	ocWaitLongFor("condition=ready", "compliancesuite", scan)
+}
+
+// Will set up a scan with the given name and wait for it to be done.
+// The scan will be done for the CIS benchmark.
+func withCISScan(scan string) {
+	withScan(scan, "cis")
+}
+
+func withE8Scan(scan string) {
+	withScan(scan, "e8")
 }
