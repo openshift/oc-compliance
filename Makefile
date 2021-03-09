@@ -5,6 +5,8 @@ export GOFLAGS=-mod=vendor
 
 SRC=$(shell find . -name *.go)
 
+OSCAP=$(shell which oscap || echo /usr/bin/oscap)
+
 .PHONY: all
 all: build
 
@@ -21,7 +23,8 @@ install: build
 
 .PHONY: e2e
 e2e: install
-	go test ./tests/e2e -v --ginkgo.v
+	go test ./tests/e2e -timeout 40m -v --ginkgo.v
+
 
 # Helper targets
 

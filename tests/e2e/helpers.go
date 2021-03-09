@@ -1,6 +1,7 @@
 package e2e
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -12,14 +13,23 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-const defaultOCWaitTimeout = "--timeout=60s"
+const defaultOCWaitTimeout = "--timeout=90s"
 const defaultOCLongWaitTimeout = "--timeout=10m"
+const scanDoneTimeout = 5 * time.Minute
+const defaultSleep = 5 * time.Second
 
 func do(cmd string, args ...string) string {
 	execcmd := exec.Command(cmd, args...)
 	output, err := execcmd.CombinedOutput()
 	Expect(err).ShouldNot(HaveOccurred(),
 		"The command '%s' shouldn't fail.\n- Arguments: %v\n- Output: %s", cmd, args, output)
+	return strings.Trim(string(output), "\n")
+}
+
+func skipIfError(cmd string, args ...string) string {
+	execcmd := exec.Command(cmd, args...)
+	output, _ := execcmd.CombinedOutput()
+	Skip(fmt.Sprintf("The command '%s' shouldn't fail. SKIPPING.\n- Arguments: %v\n- Output: %s", cmd, args, output))
 	return strings.Trim(string(output), "\n")
 }
 
@@ -37,6 +47,11 @@ func ocApplyFromString(obj string) string {
 	return oc("apply", "-f", tmpfile.Name())
 }
 
+func ocApplyFromStringf(obj string, args ...interface{}) string {
+	formatted := fmt.Sprintf(obj, args...)
+	return ocApplyFromString(formatted)
+}
+
 func ocWaitFor(args ...string) string {
 	return oc(append([]string{"wait", defaultOCWaitTimeout, "--for"}, args...)...)
 }
@@ -49,9 +64,22 @@ func ocWaitLongFor(args ...string) string {
 // The scan will be done for the CIS benchmark.
 func withCISScan(scan string) {
 	By("Creating a ScanSettingBinding for this test")
-	oc("compliance", "bind", "--name", scan, "profile/ocp4-cis")
+	ocApplyFromStringf(`---
+apiVersion: compliance.openshift.io/v1alpha1
+kind: ScanSettingBinding
+metadata:
+  name: %s
+profiles:
+- apiGroup: compliance.openshift.io/v1alpha1
+  kind: Profile
+  name: ocp4-cis
+settingsRef:
+  apiGroup: compliance.openshift.io/v1alpha1
+  kind: ScanSetting
+  name: default
+`, scan)
 
-	time.Sleep(5 * time.Second)
+	time.Sleep(defaultSleep)
 	ocWaitFor("condition=ready", "scansettingbinding", scan)
 
 	By("Waiting for scan to be ready")

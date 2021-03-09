@@ -1,48 +1,92 @@
 package e2e
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 	"strings"
-	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-const ScanDoneTimeout = 5 * time.Minute
-
-var _ = Describe("FetchRaw", func() {
+var _ = Describe("fetch-raw", func() {
 	Context("With a pre-existing profile being scanned", func() {
-		var cwd string
+		var dir string
 
 		BeforeEach(func() {
 			withCISScan("fetch-raw-scan")
 			var tmpErr error
-			cwd, tmpErr = ioutil.TempDir("", "oc-compliance-fetch-raw-test")
+			dir, tmpErr = ioutil.TempDir("", "oc-compliance-fetch-raw")
+			By(fmt.Sprintf("Created temporary directory for this test: %s", dir))
 			Expect(tmpErr).ShouldNot(HaveOccurred())
-		}, float64(ScanDoneTimeout))
+		}, float64(scanDoneTimeout))
 
-		Context("ScanSettingBinding", func() {
-			var dir string
+		AfterEach(func() {
+			if !CurrentGinkgoTestDescription().Failed {
+				By(fmt.Sprintf("Removing temporary directory for this test: %s", dir))
+				os.RemoveAll(dir)
+			}
+		})
 
-			BeforeEach(func() {
-				dir = filepath.Join(cwd, "ssb")
-				os.Mkdir(dir, 0700)
+		assertFilesOutput := func(dirs []string) {
+			By("Assert we got results")
+			Expect(len(dirs)).Should(BeNumerically(">", 0))
+			for _, dir := range dirs {
+				Expect(dir).ToNot(BeEmpty())
+			}
+		}
+
+		assertFetchRawWorks := func(objtype, objname, wdir string) {
+			By("Calling oc compliance fetch-raw")
+			oc("compliance", "fetch-raw", objtype, objname, "-o", wdir)
+
+			By("Getting items from scan")
+			dirraw := do("find", wdir, "-name", "*.xml.bzip2")
+			dirs := strings.Split(dirraw, "\n")
+			assertFilesOutput(dirs)
+		}
+
+		assertFetchRawWithHTMLWorks := func(objtype, objname, wdir string) {
+			skipIfError("which", "oscap")
+			By("Calling oc compliance fetch-raw with --html flag")
+			oc("compliance", "fetch-raw", "--html", objtype, objname, "-o", wdir)
+
+			By("Getting HTML files from scan")
+			dirraw := do("find", wdir, "-name", "*.html")
+			dirs := strings.Split(dirraw, "\n")
+			assertFilesOutput(dirs)
+		}
+
+		When("using ScanSettingBinding", func() {
+			It("Fetches the results to the appropriate directory", func() {
+				assertFetchRawWorks("scansettingbinding", "fetch-raw-scan", dir)
 			})
 
-			It("Fetches the results to the appropriate directory", func() {
-				By("Calling oc compliance fetch-raw")
-				oc("compliance", "fetch-raw", "scansettingbinding", "fetch-raw-scan", "-o", dir)
-				By("Getting items from scan")
-				dirraw := do("ls", dir)
-				dirs := strings.Split(dirraw, "\n")
-				Expect(len(dir)).Should(BeNumerically(">", 0))
-				for _, dir := range dirs {
-					Expect(dir).ToNot(BeEmpty())
-				}
+			It("Fetches the HTML results to the appropriate directory", func() {
+				assertFetchRawWithHTMLWorks("scansettingbinding", "fetch-raw-scan", dir)
 			})
 		})
+
+		When("using ComplianceSuite", func() {
+			It("Fetches the results to the appropriate directory", func() {
+				assertFetchRawWorks("compliancesuite", "fetch-raw-scan", dir)
+			})
+
+			It("Fetches the HTML results to the appropriate directory", func() {
+				assertFetchRawWithHTMLWorks("compliancesuite", "fetch-raw-scan", dir)
+			})
+		})
+
+		When("using ComplianceScan", func() {
+			It("Fetches the results to the appropriate directory", func() {
+				assertFetchRawWorks("compliancescan", "ocp4-cis", dir)
+			})
+
+			It("Fetches the HTML results to the appropriate directory", func() {
+				assertFetchRawWithHTMLWorks("compliancescan", "ocp4-cis", dir)
+			})
+		})
+
 	})
 })

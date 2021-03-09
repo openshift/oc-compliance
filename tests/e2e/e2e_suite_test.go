@@ -63,7 +63,10 @@ spec:
 
 	By("Switching context to compliance-operator NS")
 	oc("project", "openshift-compliance")
-	time.Sleep(30 * time.Second)
+	copods := oc("get", "deployments", "-l", "name=compliance-operator")
+	if strings.Contains(copods, "No resources found") {
+		time.Sleep(30 * time.Second)
+	}
 
 	By("Waiting for all install plans")
 	ipraw := oc("get", "installplans", "-o", `jsonpath={range .items[:]}{.metadata.name}{"\n"}{end}`)
@@ -76,7 +79,10 @@ spec:
 	By("Waiting for Compliance Operator")
 
 	ocWaitFor("condition=available", "deployment", "compliance-operator")
-	time.Sleep(90 * time.Second)
+	pbs := oc("get", "profilebundles")
+	if strings.Contains(pbs, "No resources found") {
+		time.Sleep(90 * time.Second)
+	}
 
 	By("Waiting for ProfileBundles")
 	ocWaitLongFor("condition=ready", "profilebundle", "ocp4")
