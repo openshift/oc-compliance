@@ -22,7 +22,7 @@ install: build
 
 
 .PHONY: e2e
-e2e: install dependencies
+e2e: install
 	go test ./tests/e2e -timeout 40m -v --ginkgo.v
 
 
@@ -30,9 +30,3 @@ e2e: install dependencies
 
 $(BINDIR):
 	mkdir -p $(BINDIR)
-
-.PHONY: dependencies
-dependencies: $(OSCAP)
-
-$(OSCAP):
-	sudo yum install -y openscap

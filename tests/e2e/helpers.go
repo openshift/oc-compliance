@@ -26,6 +26,13 @@ func do(cmd string, args ...string) string {
 	return strings.Trim(string(output), "\n")
 }
 
+func skipIfError(cmd string, args ...string) string {
+	execcmd := exec.Command(cmd, args...)
+	output, _ := execcmd.CombinedOutput()
+	Skip(fmt.Sprintf("The command '%s' shouldn't fail. SKIPPING.\n- Arguments: %v\n- Output: %s", cmd, args, output))
+	return strings.Trim(string(output), "\n")
+}
+
 func oc(args ...string) string {
 	return do("oc", args...)
 }

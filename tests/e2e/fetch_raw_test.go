@@ -48,6 +48,7 @@ var _ = Describe("fetch-raw", func() {
 		}
 
 		assertFetchRawWithHTMLWorks := func(objtype, objname, wdir string) {
+			skipIfError("which", "oscap")
 			By("Calling oc compliance fetch-raw with --html flag")
 			oc("compliance", "fetch-raw", "--html", objtype, objname, "-o", wdir)
 
