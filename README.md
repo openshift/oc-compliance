@@ -130,6 +130,27 @@ oc compliance view-result rhcos4-e8-worker-sysctl-kernel-kptr-restrict
 +----------------------+---------------------------------------------------------------------------------+
 ```
 
+### fetch-fixes
+
+Helps download the remediations the Compliance Operator recommends. These as
+stored as YAML files in the filesystem, so one would be able to apply them to a
+cluster.
+
+Note that MachineConfigs are not complete and require extra parsing:
+
+* Setting an appropriate name
+* Setting metadata for the pool they'll apply to
+
+```
+oc compliance fetch-fixes profile ocp4-cis -o tmp/
+No fixes to persist for rule 'ocp4-accounts-restrict-service-account-tokens'
+...
+No fixes to persist for rule 'ocp4-api-server-audit-log-maxbackup'
+Persisted rule fix to tmp/ocp4-api-server-audit-log-maxsize.yaml
+Persisted rule fix to tmp/ocp4-api-server-encryption-provider-cipher.yaml
+Persisted rule fix to tmp/ocp4-api-server-encryption-provider-config.yaml
+```
+
 Installing
 ----------
 
