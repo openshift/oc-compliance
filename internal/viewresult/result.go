@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+
 	goerrors "github.com/pkg/errors"
 
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -175,7 +176,7 @@ func (h *ResultHelper) displayAvailableFixes(rule *unstructured.Unstructured) er
 		return fmt.Errorf("Unable to get %s of %s/%s of type %s: %s", "avaliableFixes", rule.GetNamespace(), rule.GetName(), rule.GetKind(), err)
 	}
 	if found && fixes != nil {
-		h.table.Append([]string{"Avalailable Fix", "Yes"})
+		h.table.Append([]string{"Available Fix", "Yes"})
 		for _, fixObjRaw := range fixes {
 			fixObj, ok := fixObjRaw.(map[string]interface{})
 			if !ok {
@@ -196,7 +197,7 @@ func (h *ResultHelper) displayAvailableFixes(rule *unstructured.Unstructured) er
 			h.table.Append([]string{"Fix Object", buf.String()})
 		}
 	} else {
-		h.table.Append([]string{"Avalailable Fix", "No"})
+		h.table.Append([]string{"Available Fix", "No"})
 	}
 
 	return nil
