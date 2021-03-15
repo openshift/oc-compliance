@@ -18,14 +18,14 @@ func init() {
 func NewCmdFetchFixes(streams genericclioptions.IOStreams) *cobra.Command {
 	var (
 		usageExamples = `
-  # Fetch from compliancescan
-  %[1]s %[2]s compliancescan [resource name] -o [directory]
+  # Fetch from a rule
+  %[1]s %[2]s rule [resource name] -o [directory]
   
-  # Fetch from compliancesuite
-  %[1]s %[2]s compliancesuite [resource name] -o [directory]
+  # Fetch from a profile
+  %[1]s %[2]s profile [resource name] -o [directory]
   
-  # Fetch from scansettingbindings
-  %[1]s %[2]s scansettingbindings [resource name] -o [directory]
+  # Fetch from a complianceRemediation
+  %[1]s %[2]s complianceremediation [resource name] -o [directory]
 `
 	)
 
