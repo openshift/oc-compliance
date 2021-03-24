@@ -14,13 +14,13 @@ Subcommands
 Helps download the raw compliance results from the Persistent Volume that
 the operator stores them at.
 
-To fetch the results of all the sacns from a scansettingbinding, simply do:
+To fetch the results of all the scans from a scansettingbinding, simply do:
 
 ```
 $ oc compliance fetch-raw scansettingbinding nist-moderate -o resultsdir/
 ```
 
-it'll be a similar operator if you want to use `ComplianceSuite` or
+It'll be a similar operator if you want to use `ComplianceSuite` or
 `ComplianceScan` objects.
 
 ### rerun-now
@@ -132,8 +132,8 @@ oc compliance view-result rhcos4-e8-worker-sysctl-kernel-kptr-restrict
 
 ### fetch-fixes
 
-Helps download the remediations the Compliance Operator recommends. These as
-stored as YAML files in the filesystem, so one would be able to apply them to a
+Helps download the remediations the Compliance Operator recommends. These are
+stored as YAML files in the filesystem, so one would then be able to apply them to a
 cluster.
 
 Note that MachineConfigs are not complete and require extra parsing:
