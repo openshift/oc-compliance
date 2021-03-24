@@ -19,17 +19,17 @@ func NewCmdBind(streams genericclioptions.IOStreams) *cobra.Command {
 	var (
 		usageExamples = `
   # Create a scansettingbinding
-  %[1]s %[2]s compliancescan -N [resource name] -s [settings] [objtype/objname]
+  %[1]s %[2]s -N <binding name> [-S <scansetting name>] <objtype/objname> [..<objtype/objname>]
   
   # Display a scansettingbinding
-  %[1]s %[2]s compliancescan --dry-run -N [resource name] -s [settings] [objtype/objname]
+  %[1]s %[2]s --dry-run -N <binding name> [-S <scansetting name>] <objtype/objname> [..<objtype/objname>]
 `
 	)
 
 	o := bind.NewBindContext(streams)
 
 	cmd := &cobra.Command{
-		Use:   "bind -n [binding name] -s [settings name] [object] ...",
+		Use:   "bind [--dry-run] -N <binding name> [-S <scansetting name>] <objtype/objname> [..<objtype/objname>]",
 		Short: "Creates a ScanSettingBinding for the given parameters",
 		Long: `'bind' will take the given parameters and create a ScanSettingBinding object.
 		
