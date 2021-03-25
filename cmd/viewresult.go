@@ -18,16 +18,16 @@ func init() {
 func NewCmdViewResult(streams genericclioptions.IOStreams) *cobra.Command {
 	var (
 		rerunExamples = `
-  # View a result
-  %[1]s %[2]s [resource name]
+  # Viewing the ComplianceCheckResult named "ocp4-cis-scheduler-no-bind-address"
+  %[1]s %[2]s ocp4-cis-scheduler-no-bind-address
 `
 	)
 
 	ctx := viewresult.NewViewResultContext(streams)
 	cmd := &cobra.Command{
-		Use:          "view-result [object] [object name]",
-		Short:        "View a result",
-		Long:         `'view-result' exposes more information about a compliance result.`,
+		Use:          "view-result <result-name>",
+		Short:        "View a ComplianceCheckResult",
+		Long:         `'view-result' exposes more information about a ComplianceCheckResult.`,
 		Example:      fmt.Sprintf(rerunExamples, "oc compliance", "view-result"),
 		SilenceUsage: true,
 		RunE: func(c *cobra.Command, args []string) error {

@@ -18,11 +18,17 @@ func init() {
 func NewCmdBind(streams genericclioptions.IOStreams) *cobra.Command {
 	var (
 		usageExamples = `
-  # Create a scansettingbinding
+  # Create a ScanSettngBinding
   %[1]s %[2]s -N <binding name> [-S <scansetting name>] <objtype/objname> [..<objtype/objname>]
-  
-  # Display a scansettingbinding
+
+  # Display a ScanSettingBinding
   %[1]s %[2]s --dry-run -N <binding name> [-S <scansetting name>] <objtype/objname> [..<objtype/objname>]
+
+  # Example: Creating a ScanSettingBinding named "mybinding" that applies the "default" ScanSettings to the standard CIS Profiles.
+  %[1]s %[2]s -N mybinding profile/ocp4-cis profie/ocp4-cis-node
+
+  # Example: Creating a ScanSettingBinding named "mybinding" that applies the "default-auto-apply" ScanSettings to a tailored CIS Profile.
+  %[1]s %[2]s -N mybinding -S default-auto-apply tailoredprofile/ocp4-cis-node-tailored
 `
 	)
 
@@ -32,8 +38,12 @@ func NewCmdBind(streams genericclioptions.IOStreams) *cobra.Command {
 		Use:   "bind [--dry-run] -N <binding name> [-S <scansetting name>] <objtype/objname> [..<objtype/objname>]",
 		Short: "Creates a ScanSettingBinding for the given parameters",
 		Long: `'bind' will take the given parameters and create a ScanSettingBinding object.
-		
-These objects will take the given scanSettings and bind them to the given profiles and tailored profiles.`,
+
+These objects will take the given ScanSettings and bind them to the given
+Profiles and TailoredProfiles.
+
+If the -S option is not provided, then the ScanSettingBinding will bind the
+"default" ScanSetting (an hourly scan on worker and master nodes).`,
 		Example:      fmt.Sprintf(usageExamples, "oc compliance", "bind"),
 		SilenceUsage: true,
 		RunE: func(c *cobra.Command, args []string) error {

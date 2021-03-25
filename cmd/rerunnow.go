@@ -17,22 +17,22 @@ func init() {
 func NewCmdRerunNow(streams genericclioptions.IOStreams) *cobra.Command {
 	var (
 		rerunExamples = `
-  # rerun a compliancescan
-  %[1]s %[2]s compliancescan [resource name]
+  # Re-run an individual ComplianceScan named "ocp4-cis"
+  %[1]s %[2]s compliancescan ocp4-cis
   
-  # rerun a compliancesuite
-  %[1]s %[2]s compliancesuite [resource name]
+  # Re-run all scans in a ComplianceSuite named "mysuite"
+  %[1]s %[2]s compliancesuite mysuite
   
-  # rerun a scansettingbindings
-  %[1]s %[2]s scansettingbindings [resource name]
+  # Re-run all ComplianceSuites bound by the ScanSettingBinding named "mybinding"
+  %[1]s %[2]s scansettingbindings mybinding
 `
 	)
 
 	ctx := rerunnow.NewReRunNowContext(streams)
 	cmd := &cobra.Command{
-		Use:          "rerun-now [object] [object name]",
-		Short:        "Force a rerun for a scan or set of scans",
-		Long:         `'rerun-now' forces a scan or set of scans to be retriggered.`,
+		Use:          "rerun-now {compliancescan | compliancesuite | scansettingbindings} <object-name>",
+		Short:        "Force a re-scan for one or more ComplianceScans",
+		Long:         `'rerun-now' forces a ComplianceScan or set of ComplianceScans to be retriggered.`,
 		Example:      fmt.Sprintf(rerunExamples, "oc compliance", "rerun-now"),
 		SilenceUsage: true,
 		RunE: func(c *cobra.Command, args []string) error {

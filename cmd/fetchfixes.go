@@ -18,26 +18,26 @@ func init() {
 func NewCmdFetchFixes(streams genericclioptions.IOStreams) *cobra.Command {
 	var (
 		usageExamples = `
-  # Fetch from a rule
-  %[1]s %[2]s rule [resource name] -o [directory]
-  
-  # Fetch from a profile
-  %[1]s %[2]s profile [resource name] -o [directory]
-  
-  # Fetch from a complianceRemediation
-  %[1]s %[2]s complianceremediation [resource name] -o [directory]
+  # Fetch from a rule named "ocp4-api-server-encryption-provider-cipher" into /tmp
+  %[1]s %[2]s rule cp4-api-server-encryption-provider-cipher -o /tmp
+
+  # Fetch from a profile named "ocp4-cis" into /tmp
+  %[1]s %[2]s profile ocp4-cis -o /tmp
+
+  # Fetch from a complianceRemediation named ocp4-cis-api-server-encryption-provider-cipher into /tmp
+  %[1]s %[2]s complianceremediation ocp4-cis-api-server-encryption-provider-cipher -o /tmp
 `
 	)
 
 	o := fetchfixes.NewFetchFixesContext(streams)
 
 	cmd := &cobra.Command{
-		Use:   "fetch-fixes [object] [object name] -o [output path]",
-		Short: "Download the fixes or remediations",
-		Long: `'fetch-fixes' fetches the fixes or remediations from a rule, profile, scan or remediation object.
+		Use:   "fetch-fixes {rule | profile | complianceremediation } <resource-name> -o <output path>",
+		Short: "Download the fixes/remediations",
+		Long: `'fetch-fixes' fetches the fixes/remediations from a Rule, Profile, or ComplianceRemediation.
 
-This command allows you to download the proposed fixes from a
-compliance scan or a profile to a specified directory.`,
+This command allows you to download the proposed fixes from a Rule, Profile, or
+ComplianceRemediation into a specified directory.`,
 		Example:      fmt.Sprintf(usageExamples, "oc compliance", "fetch-fixes"),
 		SilenceUsage: true,
 		RunE: func(c *cobra.Command, args []string) error {
