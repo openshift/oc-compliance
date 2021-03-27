@@ -18,26 +18,26 @@ func init() {
 func NewCmdFetchRaw(streams genericclioptions.IOStreams) *cobra.Command {
 	var (
 		usageExamples = `
-  # Fetch from compliancescan
-  %[1]s %[2]s compliancescan [resource name] -o [directory]
+  # Fetch from compliancescan named "myscan" into /tmp
+  %[1]s %[2]s compliancescan myscan -o /tmp
   
-  # Fetch from compliancesuite
-  %[1]s %[2]s compliancesuite [resource name] -o [directory]
+  # Fetch from compliancesuite named "mysuite" into /tmp
+  %[1]s %[2]s compliancesuite mysuite -o /tmp
   
-  # Fetch from scansettingbindings
-  %[1]s %[2]s scansettingbindings [resource name] -o [directory]
+  # Fetch from scansettingbinding named "mybinding" into /tmp
+  %[1]s %[2]s scansettingbindings mybinding -o /tmp
 `
 	)
 
 	o := fetchraw.NewFetchRawOptions(streams)
 
 	cmd := &cobra.Command{
-		Use:   "fetch-raw [object] [object name] -o [output path]",
+		Use:   "fetch-raw {compliancescan | compliancesuite | scansettingbindings} <resource-name> -o <output path>",
 		Short: "Download raw compliance results",
 		Long: `'fetch-raw' fetches the raw results for a scan or set of scans.
 
-This command allows you to download the raw results from a
-compliance scan to a specified directory.`,
+This command allows you to download archives of the raw (ARF) results from a
+ComplianceScan, ComplianceSuite, or ScanSettingBinding to a specified directory.`,
 		Example:      fmt.Sprintf(usageExamples, "oc compliance", "fetch-raw"),
 		SilenceUsage: true,
 		RunE: func(c *cobra.Command, args []string) error {

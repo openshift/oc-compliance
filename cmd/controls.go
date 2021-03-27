@@ -17,14 +17,14 @@ func init() {
 func NewCmdControls(streams genericclioptions.IOStreams) *cobra.Command {
 	var (
 		controlsExamples = `
-  # Get a controls for the profile
-  %[1]s %[2]s profile [resource name]
+  # View controls for the "ocp4-cis-node" profile
+  %[1]s %[2]s profile ocp4-cis-node
 `
 	)
 
 	ctx := controls.NewControlsContext(streams)
 	cmd := &cobra.Command{
-		Use:          "controls [object] [object name]",
+		Use:          "controls profile <profile-name>",
 		Short:        "Get a report of what controls you're complying with",
 		Long:         "Get a report of what controls you're complying with",
 		Example:      fmt.Sprintf(controlsExamples, "oc compliance", "controls"),
