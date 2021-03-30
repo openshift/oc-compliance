@@ -9,7 +9,7 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "oc compliance",
+	Use:   "oc-compliance",
 	Short: "A set of utilities that come along with the compliance-operator.",
 	Long:  `A set of utilities that come along with the compliance-operator.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
