@@ -3,7 +3,7 @@ package rerunnow
 import (
 	"fmt"
 
-	"github.com/JAORMX/oc-compliance/internal/common"
+	"github.com/openshift/oc-compliance/internal/common"
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 )

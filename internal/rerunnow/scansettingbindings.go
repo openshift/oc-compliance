@@ -8,7 +8,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
-	"github.com/JAORMX/oc-compliance/internal/common"
+	"github.com/openshift/oc-compliance/internal/common"
 )
 
 type ScanSettingBindingHelper struct {

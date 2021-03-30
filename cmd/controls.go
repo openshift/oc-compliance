@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/JAORMX/oc-compliance/internal/controls"
+	"github.com/openshift/oc-compliance/internal/controls"
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 )
