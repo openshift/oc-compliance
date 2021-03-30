@@ -19,7 +19,7 @@ import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/kubectl/pkg/cmd/cp"
 
-	"github.com/JAORMX/oc-compliance/internal/common"
+	"github.com/openshift/oc-compliance/internal/common"
 )
 
 const (

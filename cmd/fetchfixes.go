@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
-	fetchfixes "github.com/JAORMX/oc-compliance/internal/fetchfixes"
+	fetchfixes "github.com/openshift/oc-compliance/internal/fetchfixes"
 )
 
 func init() {

@@ -14,7 +14,7 @@ all: build
 build: $(BIN)
 
 $(BIN): $(BINDIR) $(SRC)
-	go build -o $(BIN) github.com/JAORMX/oc-compliance/cmd
+	go build -o $(BIN) ./cmd
 
 .PHONY: install
 install: build

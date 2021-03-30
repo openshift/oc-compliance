@@ -1,4 +1,4 @@
-module github.com/JAORMX/oc-compliance
+module github.com/openshift/oc-compliance
 
 go 1.14
 
