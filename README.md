@@ -26,7 +26,7 @@ It'll be a similar operator if you want to use `ComplianceSuite` or
 ### rerun-now
 
 Forces the scan or set of scans to re-run on command instead of waiting for
-them to be sheduled.
+them to be scheduled.
 
 ```
 $ oc compliance rerun-now scansettingbinding nist-moderate
