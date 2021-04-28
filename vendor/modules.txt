@@ -75,6 +75,9 @@ github.com/hashicorp/golang-lru/simplelru
 github.com/imdario/mergo
 # github.com/inconshreveable/mousetrap v1.0.0
 github.com/inconshreveable/mousetrap
+# github.com/jaytaylor/html2text v0.0.0-20200412013138-3577fbdbcff7
+## explicit
+github.com/jaytaylor/html2text
 # github.com/json-iterator/go v1.1.10
 github.com/json-iterator/go
 # github.com/konsorten/go-windows-terminal-sequences v1.0.3
@@ -161,6 +164,9 @@ github.com/spf13/cobra
 # github.com/spf13/pflag v1.0.5
 ## explicit
 github.com/spf13/pflag
+# github.com/ssor/bom v0.0.0-20170718123548-6386211fdfcf
+## explicit
+github.com/ssor/bom
 # golang.org/x/crypto v0.0.0-20201002170205-7f63de1d35b0
 golang.org/x/crypto/ssh/terminal
 # golang.org/x/net v0.0.0-20201202161906-c7110b5ffcbb

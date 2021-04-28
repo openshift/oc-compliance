@@ -16,6 +16,7 @@ import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"github.com/openshift/oc-compliance/internal/common"
+	"github.com/jaytaylor/html2text"
 	"github.com/olekukonko/tablewriter"
 )
 
@@ -85,10 +86,11 @@ func (h *ResultHelper) Handle() error {
 	if err := h.stringToTable(res, "severity"); err != nil {
 		return err
 	}
-	if err := h.stringToTable(rule, "description"); err != nil {
+
+	if err := h.htmlStringToTable(rule, "description"); err != nil {
 		return err
 	}
-	if err := h.stringToTable(rule, "rationale"); err != nil {
+	if err := h.htmlStringToTable(rule, "rationale"); err != nil {
 		return err
 	}
 	if err := h.stringToTableIfExists(res, "instructions"); err != nil {
@@ -149,6 +151,36 @@ func (h *ResultHelper) stringToTable(obj *unstructured.Unstructured, keys ...str
 	return h.stringToTableEx(obj, true, keys...)
 }
 
+func (h *ResultHelper) htmlStringToTableEx(obj *unstructured.Unstructured, mustExist bool, keys ...string) error {
+	xmlStr, found, err := unstructured.NestedString(obj.Object, keys...)
+	lastKey := keys[len(keys)-1]
+	if err != nil {
+		return fmt.Errorf("Unable to get %s of %s/%s of type %s: %s", lastKey, obj.GetNamespace(), obj.GetName(), obj.GetKind(), err)
+	}
+	if !found {
+		if !mustExist {
+			return nil
+		}
+		return fmt.Errorf("%s/%s of type %s: has no '%s'", obj.GetNamespace(), obj.GetName(), obj.GetKind(), lastKey)
+	}
+
+	htmlStr := strings.ReplaceAll(xmlStr, "<html:", "<")
+	htmlStr = strings.ReplaceAll(htmlStr, "</html:", "</")
+	text, err := html2text.FromString(htmlStr, html2text.Options{PrettyTables: true, OmitLinks: false})
+	if err != nil {
+		text = xmlStr
+	}
+	h.table.Append([]string{strings.Title(lastKey), text})
+	return nil
+}
+
+func (h *ResultHelper) htmlStringToTable(obj *unstructured.Unstructured, keys ...string) error {
+	return h.htmlStringToTableEx(obj, true, keys...)
+}
+
+func (h *ResultHelper) htmlStringToTableIfExists(obj *unstructured.Unstructured, keys ...string) error {
+	return h.htmlStringToTableEx(obj, false, keys...)
+}
 func (h *ResultHelper) stringToTableIfExists(obj *unstructured.Unstructured, keys ...string) error {
 	return h.stringToTableEx(obj, false, keys...)
 }
