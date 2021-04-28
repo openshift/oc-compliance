@@ -25,8 +25,6 @@ install: build
 e2e: install
 	go test ./tests/e2e -timeout 40m -v --ginkgo.v
 
-
 # Helper targets
-
 $(BINDIR):
 	mkdir -p $(BINDIR)
