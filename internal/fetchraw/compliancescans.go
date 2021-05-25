@@ -301,6 +301,13 @@ func getPVCExtractorPod(objName, ns, image, claimName string) *corev1.Pod {
 					},
 				},
 			},
+			Tolerations: []corev1.Toleration{
+				{
+					Effect:   corev1.TaintEffectNoSchedule,
+					Key:      "node-role.kubernetes.io/master",
+					Operator: corev1.TolerationOpExists,
+				},
+			},
 			Volumes: []corev1.Volume{
 				{
 					Name: "raw-results-vol",
