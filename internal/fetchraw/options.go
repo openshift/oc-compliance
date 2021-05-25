@@ -15,6 +15,7 @@ type FetchRawOptions struct {
 	common.CommandContext
 
 	OutputPath string
+	Image      string
 	HTML       bool
 }
 
@@ -38,6 +39,10 @@ func (o *FetchRawOptions) Validate() error {
 		return fmt.Errorf("The output path must be a directory")
 	}
 
+	if o.Image == "" {
+		return fmt.Errorf("The image parameter can't be empty")
+	}
+
 	objref, err := common.ValidateObjectArgs(o.Args)
 	if err != nil {
 		return err
@@ -52,11 +57,11 @@ func (o *FetchRawOptions) Validate() error {
 
 	switch objref.Type {
 	case common.ScanSettingBinding:
-		o.Helper = NewScanSettingBindingHelper(o.Kuser, objref.Name, o.OutputPath, o.HTML, o.IOStreams)
+		o.Helper = NewScanSettingBindingHelper(o.Kuser, objref.Name, o.OutputPath, o.Image, o.HTML, o.IOStreams)
 	case common.ComplianceSuite:
-		o.Helper = NewComplianceSuiteHelper(o.Kuser, objref.Name, o.OutputPath, o.HTML, o.IOStreams)
+		o.Helper = NewComplianceSuiteHelper(o.Kuser, objref.Name, o.OutputPath, o.Image, o.HTML, o.IOStreams)
 	case common.ComplianceScan:
-		o.Helper = NewComplianceScanHelper(o.Kuser, objref.Name, o.OutputPath, o.HTML, o.IOStreams)
+		o.Helper = NewComplianceScanHelper(o.Kuser, objref.Name, o.OutputPath, o.Image, o.HTML, o.IOStreams)
 	default:
 		return fmt.Errorf("Invalid object type for this command")
 	}
