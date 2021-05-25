@@ -17,17 +17,19 @@ type ScanSettingBindingHelper struct {
 	name       string
 	kind       string
 	outputPath string
+	image      string
 	html       bool
 	genericclioptions.IOStreams
 }
 
-func NewScanSettingBindingHelper(kuser common.KubeClientUser, name, outputPath string, html bool, streams genericclioptions.IOStreams) common.ObjectHelper {
+func NewScanSettingBindingHelper(kuser common.KubeClientUser, name, outputPath, image string, html bool, streams genericclioptions.IOStreams) common.ObjectHelper {
 	return &ScanSettingBindingHelper{
 		kuser:      kuser,
 		name:       name,
 		kind:       "ScanSettingBinding",
 		outputPath: outputPath,
 		html:       html,
+		image:      image,
 		gvk: schema.GroupVersionResource{
 			Group:    common.CmpAPIGroup,
 			Version:  common.CmpResourceVersion,
@@ -45,6 +47,6 @@ func (h *ScanSettingBindingHelper) Handle() error {
 	}
 	suiteName := res.GetName()
 
-	helper := NewComplianceSuiteHelper(h.kuser, suiteName, h.outputPath, h.html, h.IOStreams)
+	helper := NewComplianceSuiteHelper(h.kuser, suiteName, h.outputPath, h.image, h.html, h.IOStreams)
 	return helper.Handle()
 }
