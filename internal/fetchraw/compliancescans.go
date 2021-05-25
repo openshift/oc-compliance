@@ -35,16 +35,18 @@ type ComplianceScanHelper struct {
 	kind       string
 	name       string
 	outputPath string
+	image      string
 	html       bool
 	genericclioptions.IOStreams
 }
 
-func NewComplianceScanHelper(kuser common.KubeClientUser, name, outputPath string, html bool, streams genericclioptions.IOStreams) common.ObjectHelper {
+func NewComplianceScanHelper(kuser common.KubeClientUser, name, outputPath, image string, html bool, streams genericclioptions.IOStreams) common.ObjectHelper {
 	return &ComplianceScanHelper{
 		kuser:      kuser,
 		name:       name,
 		kind:       "ComplianceScan",
 		outputPath: outputPath,
+		image:      image,
 		html:       html,
 		gvk: schema.GroupVersionResource{
 			Group:    common.CmpAPIGroup,
@@ -98,7 +100,7 @@ func (h *ComplianceScanHelper) Handle() error {
 	}
 
 	// Create extractor pod
-	extractorPod := getPVCExtractorPod(res.GetName(), rsnamespace, claimName)
+	extractorPod := getPVCExtractorPod(res.GetName(), rsnamespace, h.image, claimName)
 	extractorPod, err = h.kuser.Clientset().CoreV1().Pods(rsnamespace).Create(context.TODO(), extractorPod, metav1.CreateOptions{})
 	if err != nil && !kerrors.IsAlreadyExists(err) {
 		return err
@@ -273,7 +275,7 @@ func getPVCExtractorPodLabels(objName string) map[string]string {
 	}
 }
 
-func getPVCExtractorPod(objName, ns, claimName string) *corev1.Pod {
+func getPVCExtractorPod(objName, ns, image, claimName string) *corev1.Pod {
 	return &corev1.Pod{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "v1",
@@ -288,7 +290,7 @@ func getPVCExtractorPod(objName, ns, claimName string) *corev1.Pod {
 			Containers: []corev1.Container{
 				{
 					Name:    "pv-extract-pod",
-					Image:   "registry.access.redhat.com/ubi8/ubi:latest",
+					Image:   image,
 					Command: []string{"sleep", "inf"},
 					VolumeMounts: []corev1.VolumeMount{
 						{
@@ -297,6 +299,13 @@ func getPVCExtractorPod(objName, ns, claimName string) *corev1.Pod {
 							MountPath: fmt.Sprintf("/%s", rawResultsMountPath),
 						},
 					},
+				},
+			},
+			Tolerations: []corev1.Toleration{
+				{
+					Effect:   corev1.TaintEffectNoSchedule,
+					Key:      "node-role.kubernetes.io/master",
+					Operator: corev1.TolerationOpExists,
 				},
 			},
 			Volumes: []corev1.Volume{
