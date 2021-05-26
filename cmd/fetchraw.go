@@ -56,6 +56,8 @@ ComplianceScan, ComplianceSuite, or ScanSettingBinding to a specified directory.
 	}
 
 	cmd.Flags().StringVarP(&o.OutputPath, "output", "o", ".", "The path where you want to persist the raw results to")
+	cmd.Flags().StringVarP(&o.Image, "image", "i", "registry.access.redhat.com/ubi8/ubi:latest",
+		"The container image to use to fetch the raw results from the compliance scan. Must contain the cp and tar commands.")
 	cmd.Flags().BoolVar(&o.HTML, "html", false, "Whether to render the raw results to HTML (Requires the 'oscap' command)")
 	o.ConfigFlags.AddFlags(cmd.Flags())
 
