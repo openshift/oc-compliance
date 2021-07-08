@@ -14,16 +14,20 @@ import (
 )
 
 type RuleHelper struct {
-	kuser      common.KubeClientUser
-	gvk        schema.GroupVersionResource
-	kind       string
-	name       string
-	outputPath string
-	genericclioptions.IOStreams
+	FixPersister
+	kuser common.KubeClientUser
+	gvk   schema.GroupVersionResource
+	kind  string
+	name  string
 }
 
-func NewRuleHelper(kuser common.KubeClientUser, name string, outputPath string, streams genericclioptions.IOStreams) common.ObjectHelper {
+func NewRuleHelper(kuser common.KubeClientUser, name string, outputPath string, mcRoles []string, streams genericclioptions.IOStreams) common.ObjectHelper {
 	return &RuleHelper{
+		FixPersister: FixPersister{
+			outputPath: outputPath,
+			mcRoles:    mcRoles,
+			IOStreams:  streams,
+		},
 		kuser: kuser,
 		name:  name,
 		kind:  "Rule",
@@ -32,8 +36,6 @@ func NewRuleHelper(kuser common.KubeClientUser, name string, outputPath string, 
 			Version:  common.CmpResourceVersion,
 			Resource: "rules",
 		},
-		outputPath: outputPath,
-		IOStreams:  streams,
 	}
 }
 
@@ -56,17 +58,14 @@ func (h *RuleHelper) Handle() error {
 
 	needsSuffix := len(fixes) > 1
 	for idx, fix := range fixes {
-		fixName := r.GetName()
+		fileName := r.GetName()
 		if needsSuffix {
-			fixName = fmt.Sprintf("%s-%d", r.GetName(), idx)
+			fileName = fmt.Sprintf("%s-%d", r.GetName(), idx)
 		}
-
-		path, err := common.PersistObjectToYamlFile(fixName, fix, h.outputPath, yamlSerializer)
+		err := h.handleObjectPersistence(yamlSerializer, fileName, fix)
 		if err != nil {
 			return err
 		}
-
-		fmt.Fprintf(h.Out, "Persisted rule fix to %s\n", path)
 	}
 
 	return nil

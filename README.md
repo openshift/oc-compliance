@@ -136,10 +136,9 @@ Helps download the remediations the Compliance Operator recommends. These are
 stored as YAML files in the filesystem, so one would then be able to apply them to a
 cluster.
 
-Note that MachineConfigs are not complete and require extra parsing:
-
-* Setting an appropriate name
-* Setting metadata for the pool they'll apply to
+Note that if the MachineConfigs objects will be rendered with the default roles
+`master` and `worker`. If you need different ones, you can add them via the
+`--mc-roles` flag.
 
 ```
 oc compliance fetch-fixes profile ocp4-cis -o tmp/
