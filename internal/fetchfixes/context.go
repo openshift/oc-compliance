@@ -12,6 +12,8 @@ type FetchFixesContext struct {
 	common.CommandContext
 
 	OutputPath string
+	// MachineConfig roles
+	MCRoles []string
 }
 
 func NewFetchFixesContext(streams genericclioptions.IOStreams) *FetchFixesContext {
@@ -41,11 +43,11 @@ func (o *FetchFixesContext) Validate() error {
 
 	switch objref.Type {
 	case common.Rule:
-		o.Helper = NewRuleHelper(o.Kuser, objref.Name, o.OutputPath, o.IOStreams)
+		o.Helper = NewRuleHelper(o.Kuser, objref.Name, o.OutputPath, o.MCRoles, o.IOStreams)
 	case common.Profile:
-		o.Helper = NewProfileHelper(o.Kuser, objref.Name, o.OutputPath, o.IOStreams)
+		o.Helper = NewProfileHelper(o.Kuser, objref.Name, o.OutputPath, o.MCRoles, o.IOStreams)
 	case common.ComplianceRemediation:
-		o.Helper = NewComplianceRemediationHelper(o.Kuser, objref.Name, o.OutputPath, o.IOStreams)
+		o.Helper = NewComplianceRemediationHelper(o.Kuser, objref.Name, o.OutputPath, o.MCRoles, o.IOStreams)
 	default:
 		return fmt.Errorf("Invalid object type for this command")
 	}

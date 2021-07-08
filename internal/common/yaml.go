@@ -12,8 +12,8 @@ import (
 )
 
 // PersistObjectToYamlFile persists the given object to a yaml file in the given path
-func PersistObjectToYamlFile(name string, obj *unstructured.Unstructured, outputDir string, serializer *k8sserial.Serializer) (string, error) {
-	path := path.Join(outputDir, name+".yaml")
+func PersistObjectToYamlFile(fileNameBase string, obj *unstructured.Unstructured, outputDir string, serializer *k8sserial.Serializer) (string, error) {
+	path := path.Join(outputDir, fileNameBase+".yaml")
 	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0600)
 	if err != nil {
 		return "", err
@@ -21,7 +21,7 @@ func PersistObjectToYamlFile(name string, obj *unstructured.Unstructured, output
 
 	defer f.Close()
 
-	if err := PersistObjectToYaml(name, obj, f, serializer); err != nil {
+	if err := PersistObjectToYaml(fileNameBase, obj, f, serializer); err != nil {
 		return "", nil
 	}
 

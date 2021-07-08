@@ -16,10 +16,11 @@ type ProfileHelper struct {
 	kind       string
 	name       string
 	outputPath string
+	mcRoles    []string
 	genericclioptions.IOStreams
 }
 
-func NewProfileHelper(kuser common.KubeClientUser, name string, outputPath string, streams genericclioptions.IOStreams) common.ObjectHelper {
+func NewProfileHelper(kuser common.KubeClientUser, name string, outputPath string, mcRoles []string, streams genericclioptions.IOStreams) common.ObjectHelper {
 	return &ProfileHelper{
 		kuser: kuser,
 		name:  name,
@@ -30,6 +31,7 @@ func NewProfileHelper(kuser common.KubeClientUser, name string, outputPath strin
 			Resource: "profiles",
 		},
 		outputPath: outputPath,
+		mcRoles:    mcRoles,
 		IOStreams:  streams,
 	}
 }
@@ -42,7 +44,7 @@ func (h *ProfileHelper) Handle() error {
 
 	rules, err := common.GetRulesFromProfile(p)
 	for _, r := range rules {
-		rh := NewRuleHelper(h.kuser, r, h.outputPath, h.IOStreams)
+		rh := NewRuleHelper(h.kuser, r, h.outputPath, h.mcRoles, h.IOStreams)
 		rh.Handle()
 	}
 	return nil

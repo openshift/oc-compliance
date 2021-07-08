@@ -14,16 +14,20 @@ import (
 )
 
 type ComplianceRemediationHelper struct {
-	kuser      common.KubeClientUser
-	gvk        schema.GroupVersionResource
-	kind       string
-	name       string
-	outputPath string
-	genericclioptions.IOStreams
+	FixPersister
+	kuser common.KubeClientUser
+	gvk   schema.GroupVersionResource
+	kind  string
+	name  string
 }
 
-func NewComplianceRemediationHelper(kuser common.KubeClientUser, name string, outputPath string, streams genericclioptions.IOStreams) common.ObjectHelper {
+func NewComplianceRemediationHelper(kuser common.KubeClientUser, name string, outputPath string, mcRoles []string, streams genericclioptions.IOStreams) common.ObjectHelper {
 	return &ComplianceRemediationHelper{
+		FixPersister: FixPersister{
+			outputPath: outputPath,
+			mcRoles:    mcRoles,
+			IOStreams:  streams,
+		},
 		kuser: kuser,
 		name:  name,
 		kind:  "ComplianceRemediation",
@@ -32,8 +36,6 @@ func NewComplianceRemediationHelper(kuser common.KubeClientUser, name string, ou
 			Version:  common.CmpResourceVersion,
 			Resource: "complianceremediations",
 		},
-		outputPath: outputPath,
-		IOStreams:  streams,
 	}
 }
 
@@ -49,12 +51,11 @@ func (h *ComplianceRemediationHelper) Handle() error {
 
 	yamlSerializer := k8sserial.NewYAMLSerializer(k8sserial.DefaultMetaFactory, nil, nil)
 
-	path, err := common.PersistObjectToYamlFile(r.GetName(), current, h.outputPath, yamlSerializer)
+	fileName := h.name
+	err = h.handleObjectPersistence(yamlSerializer, fileName, current)
 	if err != nil {
 		return err
 	}
-
-	fmt.Fprintf(h.Out, "Persisted compliance remediation fix to %s\n", path)
 
 	return nil
 }

@@ -56,6 +56,8 @@ ComplianceRemediation into a specified directory.`,
 	}
 
 	cmd.Flags().StringVarP(&o.OutputPath, "output", "o", ".", "The path where you want to persist the fix objects to")
+	cmd.Flags().StringSliceVarP(&o.MCRoles, "mc-roles", "", []string{"worker", "master"},
+		"If the remediation(s) are MachineConfig objects, render them with the following roles")
 	o.ConfigFlags.AddFlags(cmd.Flags())
 
 	return cmd

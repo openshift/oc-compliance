@@ -41,6 +41,18 @@ var _ = Describe("fetch-fixes", func() {
 
 		It("fetches fixes for ComplianceRemediation", func() {
 			oc("compliance", "fetch-fixes", "complianceremediation", targetRem, "-o", dir)
+			assertFetchFixesFetchedSomething(dir)
+		})
+	})
+
+	Context("With an MC remediation", func() {
+		It("fetches fixes for rule", func() {
+			oc("compliance", "fetch-fixes", "rule", "rhcos4-coreos-pti-kernel-argument", "-o", dir)
+			assertFetchFixesFetchedSomething(dir)
+			name := do("grep", "-R", "name:.*75.*worker", dir)
+			Expect(name).ToNot(BeEmpty())
+			label := do("grep", "-R", "machineconfiguration.openshift.io/role: master", dir)
+			Expect(label).ToNot(BeEmpty())
 		})
 	})
 
