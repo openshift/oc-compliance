@@ -11,6 +11,7 @@ import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"github.com/openshift/oc-compliance/internal/common"
+	"github.com/openshift/oc-compliance/internal/fetchfixes/emb"
 )
 
 type RuleHelper struct {
@@ -19,9 +20,12 @@ type RuleHelper struct {
 	gvk   schema.GroupVersionResource
 	kind  string
 	name  string
+	emb   emb.ExtraManifestBuilder
 }
 
-func NewRuleHelper(kuser common.KubeClientUser, name string, outputPath string, mcRoles []string, streams genericclioptions.IOStreams) common.ObjectHelper {
+func NewRuleHelper(
+	kuser common.KubeClientUser, name string, outputPath string, mcRoles []string,
+	emb emb.ExtraManifestBuilder, streams genericclioptions.IOStreams) common.ObjectHelper {
 	return &RuleHelper{
 		FixPersister: FixPersister{
 			outputPath: outputPath,
@@ -30,6 +34,7 @@ func NewRuleHelper(kuser common.KubeClientUser, name string, outputPath string, 
 		},
 		kuser: kuser,
 		name:  name,
+		emb:   emb,
 		kind:  "Rule",
 		gvk: schema.GroupVersionResource{
 			Group:    common.CmpAPIGroup,
@@ -62,6 +67,7 @@ func (h *RuleHelper) Handle() error {
 		if needsSuffix {
 			fileName = fmt.Sprintf("%s-%d", r.GetName(), idx)
 		}
+		h.emb.BuildObjectContext(fix, r)
 		err := h.handleObjectPersistence(yamlSerializer, fileName, fix)
 		if err != nil {
 			return err

@@ -15,8 +15,8 @@ import (
 	k8sserial "k8s.io/apimachinery/pkg/runtime/serializer/json"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
-	"github.com/openshift/oc-compliance/internal/common"
 	"github.com/olekukonko/tablewriter"
+	"github.com/openshift/oc-compliance/internal/common"
 )
 
 const (

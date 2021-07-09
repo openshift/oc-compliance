@@ -58,6 +58,11 @@ ComplianceRemediation into a specified directory.`,
 	cmd.Flags().StringVarP(&o.OutputPath, "output", "o", ".", "The path where you want to persist the fix objects to")
 	cmd.Flags().StringSliceVarP(&o.MCRoles, "mc-roles", "", []string{"worker", "master"},
 		"If the remediation(s) are MachineConfig objects, render them with the following roles")
+	cmd.Flags().StringVarP(&o.ExtraManifestBuildType, "manifest-prepare", "", "default",
+		"Prepare the manifests for another system to use them. e.g. a GitOps engine.\n"+
+			"Available Options:\n"+
+			"\t* 'default'\t- does nothing.\n"+
+			"\t* 'ArgoCD'\t- prepares the manifest for ArgoCD (OpenShift GitOps)\n")
 	o.ConfigFlags.AddFlags(cmd.Flags())
 
 	return cmd

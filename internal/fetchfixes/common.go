@@ -2,6 +2,7 @@ package fetchfixes
 
 import (
 	"fmt"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	k8sserial "k8s.io/apimachinery/pkg/runtime/serializer/json"
@@ -19,6 +20,11 @@ type FixPersister struct {
 }
 
 func (fp *FixPersister) handleObjectPersistence(ys *k8sserial.Serializer, fileNameBase string, fix *unstructured.Unstructured) error {
+	// TODO: Handle enforcement remediations... This should probably
+	//       be done via a cmd-line flag to detect which type to use.
+	if isEnforcementRemediation(fix) {
+		return nil
+	}
 	if fix.GetKind() == "MachineConfig" {
 		for _, role := range fp.mcRoles {
 			handleMCMetadata(fix, fileNameBase, role)
@@ -58,4 +64,16 @@ func handleMCMetadata(obj *unstructured.Unstructured, baseName, role string) {
 	labels := obj.GetLabels()
 	labels[roleKey] = role
 	obj.SetLabels(labels)
+}
+
+func isEnforcementRemediation(obj *unstructured.Unstructured) bool {
+	if len(obj.GetAnnotations()) == 0 {
+		return false
+	}
+	anns := obj.GetAnnotations()
+	rtype, ok := anns["complianceascode.io/remediation-type"]
+	if !ok {
+		return false
+	}
+	return strings.EqualFold(rtype, "Enforcement")
 }

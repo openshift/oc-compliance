@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/openshift/oc-compliance/internal/common"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
+
+	"github.com/openshift/oc-compliance/internal/common"
+	"github.com/openshift/oc-compliance/internal/fetchfixes/emb"
 )
 
 type FetchFixesContext struct {
@@ -13,7 +15,9 @@ type FetchFixesContext struct {
 
 	OutputPath string
 	// MachineConfig roles
-	MCRoles []string
+	MCRoles                []string
+	ExtraManifestBuildType string
+	EMB                    emb.ExtraManifestBuilder
 }
 
 func NewFetchFixesContext(streams genericclioptions.IOStreams) *FetchFixesContext {
@@ -36,6 +40,15 @@ func (o *FetchFixesContext) Validate() error {
 		return fmt.Errorf("The output path must be a directory")
 	}
 
+	switch o.ExtraManifestBuildType {
+	case emb.NoopBuilderName:
+		o.EMB = emb.NewNoopManifestBuilder()
+	case emb.ArgoCDBuilderName:
+		o.EMB = emb.NewArgoCDManifestBuilder()
+	default:
+		return fmt.Errorf("Invalid prepare-manifest value. should be: 'default' or 'ArgoCD'")
+	}
+
 	objref, err := common.ValidateObjectArgs(o.Args)
 	if err != nil {
 		return err
@@ -43,11 +56,11 @@ func (o *FetchFixesContext) Validate() error {
 
 	switch objref.Type {
 	case common.Rule:
-		o.Helper = NewRuleHelper(o.Kuser, objref.Name, o.OutputPath, o.MCRoles, o.IOStreams)
+		o.Helper = NewRuleHelper(o.Kuser, objref.Name, o.OutputPath, o.MCRoles, o.EMB, o.IOStreams)
 	case common.Profile:
-		o.Helper = NewProfileHelper(o.Kuser, objref.Name, o.OutputPath, o.MCRoles, o.IOStreams)
+		o.Helper = NewProfileHelper(o.Kuser, objref.Name, o.OutputPath, o.MCRoles, o.EMB, o.IOStreams)
 	case common.ComplianceRemediation:
-		o.Helper = NewComplianceRemediationHelper(o.Kuser, objref.Name, o.OutputPath, o.MCRoles, o.IOStreams)
+		o.Helper = NewComplianceRemediationHelper(o.Kuser, objref.Name, o.OutputPath, o.MCRoles, o.EMB, o.IOStreams)
 	default:
 		return fmt.Errorf("Invalid object type for this command")
 	}
@@ -55,5 +68,8 @@ func (o *FetchFixesContext) Validate() error {
 }
 
 func (o *FetchFixesContext) Run() error {
-	return o.Helper.Handle()
+	if err := o.Helper.Handle(); err != nil {
+		return err
+	}
+	return o.EMB.FlushManifests(o.OutputPath, o.MCRoles)
 }
