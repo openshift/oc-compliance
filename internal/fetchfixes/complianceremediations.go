@@ -11,6 +11,7 @@ import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"github.com/openshift/oc-compliance/internal/common"
+	"github.com/openshift/oc-compliance/internal/fetchfixes/emb"
 )
 
 type ComplianceRemediationHelper struct {
@@ -19,9 +20,13 @@ type ComplianceRemediationHelper struct {
 	gvk   schema.GroupVersionResource
 	kind  string
 	name  string
+	emb   emb.ExtraManifestBuilder
 }
 
-func NewComplianceRemediationHelper(kuser common.KubeClientUser, name string, outputPath string, mcRoles []string, streams genericclioptions.IOStreams) common.ObjectHelper {
+func NewComplianceRemediationHelper(
+	kuser common.KubeClientUser, name string, outputPath string, mcRoles []string,
+	emb emb.ExtraManifestBuilder, streams genericclioptions.IOStreams,
+) common.ObjectHelper {
 	return &ComplianceRemediationHelper{
 		FixPersister: FixPersister{
 			outputPath: outputPath,
@@ -30,6 +35,7 @@ func NewComplianceRemediationHelper(kuser common.KubeClientUser, name string, ou
 		},
 		kuser: kuser,
 		name:  name,
+		emb:   emb,
 		kind:  "ComplianceRemediation",
 		gvk: schema.GroupVersionResource{
 			Group:    common.CmpAPIGroup,
@@ -50,6 +56,8 @@ func (h *ComplianceRemediationHelper) Handle() error {
 	}
 
 	yamlSerializer := k8sserial.NewYAMLSerializer(k8sserial.DefaultMetaFactory, nil, nil)
+
+	h.emb.BuildObjectContext(current, r)
 
 	fileName := h.name
 	err = h.handleObjectPersistence(yamlSerializer, fileName, current)

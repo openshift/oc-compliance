@@ -8,6 +8,7 @@ import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"github.com/openshift/oc-compliance/internal/common"
+	"github.com/openshift/oc-compliance/internal/fetchfixes/emb"
 )
 
 type ProfileHelper struct {
@@ -17,10 +18,14 @@ type ProfileHelper struct {
 	name       string
 	outputPath string
 	mcRoles    []string
+	emb        emb.ExtraManifestBuilder
 	genericclioptions.IOStreams
 }
 
-func NewProfileHelper(kuser common.KubeClientUser, name string, outputPath string, mcRoles []string, streams genericclioptions.IOStreams) common.ObjectHelper {
+func NewProfileHelper(
+	kuser common.KubeClientUser, name string, outputPath string, mcRoles []string,
+	emb emb.ExtraManifestBuilder, streams genericclioptions.IOStreams,
+) common.ObjectHelper {
 	return &ProfileHelper{
 		kuser: kuser,
 		name:  name,
@@ -32,6 +37,7 @@ func NewProfileHelper(kuser common.KubeClientUser, name string, outputPath strin
 		},
 		outputPath: outputPath,
 		mcRoles:    mcRoles,
+		emb:        emb,
 		IOStreams:  streams,
 	}
 }
@@ -44,7 +50,7 @@ func (h *ProfileHelper) Handle() error {
 
 	rules, err := common.GetRulesFromProfile(p)
 	for _, r := range rules {
-		rh := NewRuleHelper(h.kuser, r, h.outputPath, h.mcRoles, h.IOStreams)
+		rh := NewRuleHelper(h.kuser, r, h.outputPath, h.mcRoles, h.emb, h.IOStreams)
 		rh.Handle()
 	}
 	return nil
