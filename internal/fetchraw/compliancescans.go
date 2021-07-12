@@ -13,7 +13,6 @@ import (
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
@@ -107,7 +106,7 @@ func (h *ComplianceScanHelper) Handle() error {
 	}
 
 	// wait for extractor pod
-	err = h.waitForExtractorPod(rsnamespace, res.GetName())
+	err = h.waitForExtractorPod(rsnamespace, res.GetName(), extractorPod.GetName())
 	if err != nil {
 		return err
 	}
@@ -179,28 +178,25 @@ func (h *ComplianceScanHelper) getResultsStorageRef(obj *unstructured.Unstructur
 	return rs, nil
 }
 
-func (h *ComplianceScanHelper) waitForExtractorPod(ns, objName string) error {
-	sel := labels.SelectorFromSet(getPVCExtractorPodLabels(objName))
-	opts := metav1.ListOptions{
-		LabelSelector: sel.String(),
-	}
+func (h *ComplianceScanHelper) waitForExtractorPod(ns, objName, generatedPodName string) error {
+	opts := metav1.GetOptions{}
 	// retry and ignore errors until timeout
 	var lastErr error
+	fmt.Fprintf(h.Out, "Fetching raw compliance results for pod '%s'.", generatedPodName)
 	fmt.Fprintf(h.Out, "Fetching raw compliance results for scan '%s'.", h.name)
 	timeouterr := wait.Poll(common.RetryInterval, common.Timeout, func() (bool, error) {
-		podlist, err := h.kuser.Clientset().CoreV1().Pods(ns).List(context.TODO(), opts)
+		targetpod, err := h.kuser.Clientset().CoreV1().Pods(ns).Get(context.TODO(), generatedPodName, opts)
+		// wait for the pod to show up
+		if kerrors.IsNotFound(err) {
+			// retry
+			return false, nil
+		}
 		lastErr = err
 		if err != nil {
 			// retry
 			return false, nil
 		}
-		if len(podlist.Items) == 0 {
-			// wait for the pod to show up
-			return false, nil
-		}
-
-		pod := podlist.Items[0]
-		if pod.Status.Phase == corev1.PodRunning || pod.Status.Phase == corev1.PodSucceeded {
+		if targetpod.Status.Phase == corev1.PodRunning || targetpod.Status.Phase == corev1.PodSucceeded {
 			return true, nil
 		}
 		fmt.Fprint(h.Out, ".")
