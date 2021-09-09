@@ -16,6 +16,12 @@ import (
 
 const controlAnnotationPrefix = "control.compliance.openshift.io/"
 
+type BenchMarkCtrlsMapping map[string]CtrlRulesMapping
+
+type CtrlRulesMapping map[string]RulesList
+
+type RulesList []string
+
 type ProfileHelper struct {
 	kuser   common.KubeClientUser
 	gvk     schema.GroupVersionResource
@@ -23,9 +29,10 @@ type ProfileHelper struct {
 	kind    string
 	name    string
 	genericclioptions.IOStreams
+	benchmark string
 }
 
-func NewProfileHelper(kuser common.KubeClientUser, name string, streams genericclioptions.IOStreams) common.ObjectHelper {
+func NewProfileHelper(kuser common.KubeClientUser, name string, streams genericclioptions.IOStreams, b string) common.ObjectHelper {
 	return &ProfileHelper{
 		kuser: kuser,
 		name:  name,
@@ -41,11 +48,12 @@ func NewProfileHelper(kuser common.KubeClientUser, name string, streams genericc
 			Resource: "rules",
 		},
 		IOStreams: streams,
+		benchmark: b,
 	}
 }
 
 func (h *ProfileHelper) Handle() error {
-	results := map[string][]string{}
+	results := BenchMarkCtrlsMapping{}
 
 	p, err := h.kuser.DynamicClient().Resource(h.gvk).Namespace(h.kuser.GetNamespace()).Get(context.TODO(), h.name, metav1.GetOptions{})
 	if err != nil {
@@ -68,12 +76,9 @@ func (h *ProfileHelper) Handle() error {
 
 		for key, value := range annotations {
 			if strings.HasPrefix(key, controlAnnotationPrefix) {
+				ctrl := value
 				benchmark := strings.Split(key, "/")[1]
-				_, ok := results[benchmark]
-				if !ok {
-					results[benchmark] = make([]string, 0)
-				}
-				insertControlEntries(results, benchmark, value)
+				results = h.insertControlEntries(results, benchmark, ctrl, rulename)
 			}
 		}
 	}
@@ -82,42 +87,59 @@ func (h *ProfileHelper) Handle() error {
 	return nil
 }
 
-func (h *ProfileHelper) render(res map[string][]string) {
+func (h *ProfileHelper) render(res BenchMarkCtrlsMapping) {
 	table := tablewriter.NewWriter(h.Out)
-	table.SetHeader([]string{"Framework", "Controls"})
+	table.SetHeader([]string{"Framework", "Controls", "Rules"})
 	table.SetAutoMergeCells(true)
 	table.SetRowLine(true)
 
-	for benchmark := range res {
-		sort.Strings(res[benchmark])
-	}
-
-	for benchmark, controls := range res {
+	for benchmark, bmap := range res {
+		if !h.benchmarkMatches(benchmark) {
+			continue
+		}
+		controls := make([]string, 0, len(bmap))
+		for k := range bmap {
+			controls = append(controls, k)
+		}
+		sort.Strings(controls)
 		for _, control := range controls {
-			table.Append([]string{benchmark, control})
+			rules := bmap[control]
+			sort.Strings(rules)
+			for _, rule := range rules {
+				table.Append([]string{benchmark, control, rule})
+			}
 		}
 	}
 	table.Render()
 }
 
-func insertControlEntries(res map[string][]string, benchmark string, rawcontrols string) {
+func (h *ProfileHelper) insertControlEntries(res BenchMarkCtrlsMapping, benchmark, rawcontrols, rulename string) BenchMarkCtrlsMapping {
+	if !h.benchmarkMatches(benchmark) {
+		return res
+	}
+
+	benchMap, bfound := res[benchmark]
+	// init benchmark
+	if !bfound {
+		res[benchmark] = make(CtrlRulesMapping)
+		benchMap = res[benchmark]
+	}
 	controls := strings.Split(rawcontrols, ";")
-	newControls := []string{}
 	for _, incomingctrl := range controls {
-		controlFound := false
 		if incomingctrl == "" {
 			fmt.Printf("WARNING: empty control in %s", rawcontrols)
+			continue
 		}
-		for _, existingctrl := range res[benchmark] {
-			// If we already have the control in the list; let's skip it
-			if incomingctrl == existingctrl {
-				controlFound = true
-				break
-			}
+		rules, ctrlfound := benchMap[incomingctrl]
+		if !ctrlfound {
+			benchMap[incomingctrl] = make(RulesList, 0)
+			rules = benchMap[incomingctrl]
 		}
-		if !controlFound {
-			newControls = append(newControls, incomingctrl)
-		}
+		benchMap[incomingctrl] = append(rules, rulename)
 	}
-	res[benchmark] = append(res[benchmark], newControls...)
+	return res
+}
+
+func (h *ProfileHelper) benchmarkMatches(benchmark string) bool {
+	return h.benchmark == AllBenchmarks || h.benchmark == benchmark
 }
