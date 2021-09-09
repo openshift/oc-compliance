@@ -35,11 +35,35 @@ $ oc compliance rerun-now scansettingbinding nist-moderate
 ### controls
 
 Creates a report of what compliance standards and controls will a benchmark
-fulfil.
+fulfil. It also shows the rules that address each control.
 
 ```
 $ oc compliance controls profile rhcos4-moderate
++-------------+------------------+-----------------------------------------------------------------------------------+
+|  FRAMEWORK  |     CONTROLS     |                                       RULES                                       |
++-------------+------------------+-----------------------------------------------------------------------------------+
+| NERC-CIP    | CIP-002-3 R1.1   | rhcos4-sysctl-kernel-kptr-restrict                                                |
++             +------------------+                                                                                   +
+|             | CIP-002-3 R1.2   |                                                                                   |
++             +------------------+-----------------------------------------------------------------------------------+
+|             | CIP-003-3 R1.3   | rhcos4-no-netrc-files                                                             |
++             +------------------+                                                                                   +
+|             | CIP-003-3 R3     |                                                                                   |
++             +------------------+                                                                                   +
+|             | CIP-003-3 R3.1   |                                                                                   |
++             +------------------+                                                                                   +
+|             | CIP-003-3 R3.2   |                                                                                   |
++             +------------------+                                                                                   +
+|             | CIP-003-3 R3.3   |                                                                                   |
++             +------------------+-----------------------------------------------------------------------------------+
+|             | CIP-003-3 R4.2   | rhcos4-configure-crypto-policy                                                    |
++             +                  +-----------------------------------------------------------------------------------+
+...
 ```
+
+This will display the rules and controls for all benchmarks.
+
+It's also possible to filter for a specific benchmark using the `-b` flag.
 
 ### bind
 

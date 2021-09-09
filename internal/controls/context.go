@@ -7,8 +7,11 @@ import (
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 )
 
+const AllBenchmarks = "all"
+
 type ControlsContext struct {
 	common.CommandContext
+	Benchmark string
 }
 
 func NewControlsContext(streams genericclioptions.IOStreams) *ControlsContext {
@@ -29,7 +32,7 @@ func (o *ControlsContext) Validate() error {
 
 	switch objref.Type {
 	case common.Profile:
-		o.Helper = NewProfileHelper(o.Kuser, objref.Name, o.IOStreams)
+		o.Helper = NewProfileHelper(o.Kuser, objref.Name, o.IOStreams, o.Benchmark)
 	default:
 		return fmt.Errorf("Invalid object type for this command")
 	}

@@ -45,5 +45,7 @@ func NewCmdControls(streams genericclioptions.IOStreams) *cobra.Command {
 	}
 
 	ctx.ConfigFlags.AddFlags(cmd.Flags())
+	cmd.Flags().StringVarP(&ctx.Benchmark, "benchmark", "b", controls.AllBenchmarks,
+		"The benchmark we want to retrieve the controls for")
 	return cmd
 }
