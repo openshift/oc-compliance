@@ -21,6 +21,7 @@ github.com/exponent-io/jsonpath
 # github.com/fatih/camelcase v1.0.0
 github.com/fatih/camelcase
 # github.com/fsnotify/fsnotify v1.5.1
+## explicit
 github.com/fsnotify/fsnotify
 # github.com/fvbommel/sortorder v1.0.1
 github.com/fvbommel/sortorder
@@ -46,6 +47,7 @@ github.com/golang/protobuf/ptypes/timestamp
 # github.com/google/btree v1.0.1
 github.com/google/btree
 # github.com/google/go-cmp v0.5.6
+## explicit
 github.com/google/go-cmp/cmp
 github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
@@ -151,7 +153,7 @@ github.com/pkg/errors
 github.com/pmezard/go-difflib/difflib
 # github.com/russross/blackfriday v1.5.2
 github.com/russross/blackfriday
-# github.com/spf13/cobra v1.3.0
+# github.com/spf13/cobra v1.4.0
 ## explicit
 github.com/spf13/cobra
 # github.com/spf13/pflag v1.0.5
@@ -180,6 +182,7 @@ golang.org/x/net/http2
 golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 # golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
+## explicit
 golang.org/x/oauth2
 golang.org/x/oauth2/internal
 # golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e
