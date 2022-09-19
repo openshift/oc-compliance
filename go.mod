@@ -3,6 +3,7 @@ module github.com/openshift/oc-compliance
 go 1.14
 
 require (
+	github.com/emicklei/go-restful v2.9.5+incompatible // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/olekukonko/tablewriter v0.0.5
@@ -12,9 +13,9 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/pflag v1.0.5
-	k8s.io/api v0.24.4
-	k8s.io/apimachinery v0.24.4
-	k8s.io/cli-runtime v0.24.4
-	k8s.io/client-go v0.24.4
-	k8s.io/kubectl v0.24.4
+	k8s.io/api v0.25.1
+	k8s.io/apimachinery v0.25.1
+	k8s.io/cli-runtime v0.25.1
+	k8s.io/client-go v0.25.1
+	k8s.io/kubectl v0.25.1
 )
