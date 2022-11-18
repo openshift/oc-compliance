@@ -25,7 +25,7 @@ func NewCmdBind(streams genericclioptions.IOStreams) *cobra.Command {
   %[1]s %[2]s --dry-run -N <binding name> [-S <scansetting name>] <objtype/objname> [..<objtype/objname>]
 
   # Example: Creating a ScanSettingBinding named "mybinding" that applies the "default" ScanSettings to the standard CIS Profiles.
-  %[1]s %[2]s -N mybinding profile/ocp4-cis profie/ocp4-cis-node
+  %[1]s %[2]s -N mybinding profile/ocp4-cis profile/ocp4-cis-node
 
   # Example: Creating a ScanSettingBinding named "mybinding" that applies the "default-auto-apply" ScanSettings to a tailored CIS Profile.
   %[1]s %[2]s -N mybinding -S default-auto-apply tailoredprofile/ocp4-cis-node-tailored
