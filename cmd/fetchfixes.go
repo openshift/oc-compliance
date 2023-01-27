@@ -19,7 +19,7 @@ func NewCmdFetchFixes(streams genericclioptions.IOStreams) *cobra.Command {
 	var (
 		usageExamples = `
   # Fetch from a rule named "ocp4-api-server-encryption-provider-cipher" into /tmp
-  %[1]s %[2]s rule cp4-api-server-encryption-provider-cipher -o /tmp
+  %[1]s %[2]s rule ocp4-api-server-encryption-provider-cipher -o /tmp
 
   # Fetch from a profile named "ocp4-cis" into /tmp
   %[1]s %[2]s profile ocp4-cis -o /tmp
