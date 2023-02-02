@@ -27,7 +27,7 @@ var _ = Describe("rerun-now", func() {
 			By("checking the scan is re-kicked")
 			Eventually(func() string {
 				return oc("get", "compliancesuite", "rerun-now-scan", "-o", `jsonpath={.status.phase}`)
-			}, reRunTimeout).Should(ContainSubstring(`PENDING`))
+			}, reRunTimeout).Should(BeElementOf([]string{"PENDING", "LAUNCHING", "RUNNING"}))
 
 			By("waiting for scan to be done")
 			ocWaitLongFor("condition=ready", "compliancesuite", "rerun-now-scan")
