@@ -1,6 +1,7 @@
 package fetchraw
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os"
@@ -16,7 +17,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
-	"k8s.io/kubectl/pkg/cmd/cp"
 
 	"github.com/openshift/oc-compliance/internal/common"
 )
@@ -111,21 +111,16 @@ func (h *ComplianceScanHelper) Handle() error {
 		return err
 	}
 
-	cpopts := cp.NewCopyOptions(h.IOStreams)
-	cpopts.Namespace = rsnamespace
-	cpopts.ClientConfig = h.kuser.GetConfig()
-	cpopts.Clientset = h.kuser.Clientset()
-
 	podName := extractorPod.GetName()
 	path := fmt.Sprintf("%s/%d", rawResultsMountPath, ci)
-	cpargs := []string{
-		fmt.Sprintf("%s/%s:%s", rsnamespace, podName, path),
-		h.outputPath,
-	}
+	fromPath := fmt.Sprintf("%s/%s:%s", rsnamespace, podName, path)
 
-	// run kubectl cp
-	if err = cpopts.Run(cpargs); err != nil {
-		return err
+	var cmdStderr bytes.Buffer
+	cmd := exec.Command("oc", "cp", fromPath, h.outputPath)
+	cmd.Stderr = &cmdStderr
+	err = cmd.Run()
+	if err != nil {
+		return fmt.Errorf("the cp command failed with: %s, err: %w", string(cmdStderr.Bytes()), err)
 	}
 
 	fmt.Fprintf(h.Out, "The raw compliance results are avaliable in the following directory: %s\n", h.outputPath)
