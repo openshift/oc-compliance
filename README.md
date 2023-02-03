@@ -182,3 +182,13 @@ project.
 
 However, as any other `oc` plugin, you may just copy the binary to the same
 directory where the `oc` binary is.
+
+### Branches
+
+The `master` branch trackes the latest development, even though this plugin is
+considered feature complete.
+
+The `stable` branch offers a stable base that isn't the tip of the development
+branch (`master`). So long as the `master` branch doesn't contain backwards
+incompatible changes, the `stable` branch will be rebased on top of `master` to
+pickup new changes, namely dependency updates.
