@@ -37,8 +37,7 @@ spec:
   displayName: Compliance Operator Upstream
   publisher: github.com/openshift/compliance-operator
   sourceType: grpc
-  image: quay.io/compliance-operator/compliance-operator-index:latest
-
+  image: quay.io/compliance-operator/compliance-operator-catalog:latest
 `)
 
 	ocApplyFromString(`---

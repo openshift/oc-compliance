@@ -16,7 +16,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
+	"k8s.io/client-go/kubernetes"
+	restclient "k8s.io/client-go/rest"
 	"k8s.io/kubectl/pkg/cmd/cp"
+	"k8s.io/kubectl/pkg/cmd/util"
 
 	"github.com/openshift/oc-compliance/internal/common"
 )
@@ -111,10 +114,12 @@ func (h *ComplianceScanHelper) Handle() error {
 		return err
 	}
 
-	cpopts := cp.NewCopyOptions(h.IOStreams)
-	cpopts.Namespace = rsnamespace
-	cpopts.ClientConfig = h.kuser.GetConfig()
-	cpopts.Clientset = h.kuser.Clientset()
+	cf := NewFetchRawOptions(h.IOStreams).ConfigFlags
+	f := util.NewFactory(cf)
+	cmd := cp.NewCmdCp(f, h.IOStreams)
+
+	opts := cp.NewCopyOptions(h.IOStreams)
+	opts.Namespace = rsnamespace
 
 	podName := extractorPod.GetName()
 	path := fmt.Sprintf("%s/%d", rawResultsMountPath, ci)
@@ -122,9 +127,24 @@ func (h *ComplianceScanHelper) Handle() error {
 		fmt.Sprintf("%s/%s:%s", rsnamespace, podName, path),
 		h.outputPath,
 	}
+	if err = opts.Complete(f, cmd, cpargs); err != nil {
+		return err
+	}
+
+	// We have to do this because the client associated to kuser has
+	// workarounds for the GroupVersion and Negotiation parameters. If we
+	// don't set those variables here the cp.Run() command will fail
+	// because it's going to use a client without those variables. It's
+	// also important to note that we have to set these *after* we call
+	// cp.Complete(). If we set them before, cp.Complete() will overwrite
+	// them and we'll get an error.
+	c := restclient.CopyConfig(h.kuser.GetConfig())
+	cs, err := kubernetes.NewForConfig(c)
+	opts.ClientConfig = c
+	opts.Clientset = cs
 
 	// run kubectl cp
-	if err = cpopts.Run(cpargs); err != nil {
+	if err = opts.Run(); err != nil {
 		return err
 	}
 
