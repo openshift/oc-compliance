@@ -292,6 +292,9 @@ func getPVCExtractorPodLabels(objName string) map[string]string {
 }
 
 func getPVCExtractorPod(objName, ns, image, claimName string) *corev1.Pod {
+	bFalse := false
+	bTrue := true
+
 	return &corev1.Pod{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "v1",
@@ -308,6 +311,17 @@ func getPVCExtractorPod(objName, ns, image, claimName string) *corev1.Pod {
 					Name:    "pv-extract-pod",
 					Image:   image,
 					Command: []string{"sleep", "inf"},
+					SecurityContext: &corev1.SecurityContext{
+						Capabilities: &corev1.Capabilities{
+							Drop: []corev1.Capability{"ALL"},
+						},
+						Privileged:               &bFalse,
+						RunAsNonRoot:             &bTrue,
+						AllowPrivilegeEscalation: &bFalse,
+						SeccompProfile: &corev1.SeccompProfile{
+							Type: "RuntimeDefault",
+						},
+					},
 					VolumeMounts: []corev1.VolumeMount{
 						{
 							Name:      "raw-results-vol",
