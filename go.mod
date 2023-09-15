@@ -1,6 +1,6 @@
 module github.com/openshift/oc-compliance
 
-go 1.19
+go 1.20
 
 require (
 	github.com/olekukonko/tablewriter v0.0.5
