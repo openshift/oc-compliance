@@ -306,11 +306,12 @@ func getPVCExtractorPod(objName, ns, image, claimName string) *corev1.Pod {
 			Labels:       getPVCExtractorPodLabels(objName),
 		},
 		Spec: corev1.PodSpec{
+			RestartPolicy: corev1.RestartPolicyNever,
 			Containers: []corev1.Container{
 				{
 					Name:    "pv-extract-pod",
 					Image:   image,
-					Command: []string{"sleep", "inf"},
+					Command: []string{"sleep", "300"},
 					SecurityContext: &corev1.SecurityContext{
 						Capabilities: &corev1.Capabilities{
 							Drop: []corev1.Capability{"ALL"},
