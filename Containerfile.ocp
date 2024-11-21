@@ -1,0 +1,26 @@
+FROM brew.registry.redhat.io/rh-osbs/openshift-golang-builder:v1.20 AS builder
+
+COPY . /tmp/oc-compliance
+WORKDIR /tmp/oc-compliance
+RUN mkdir -p bin
+RUN make build
+
+FROM registry.access.redhat.com/ubi9/ubi-minimal:latest
+
+LABEL io.k8s.display-name="OpenShift oc compliance"
+LABEL io.k8s.description="An OpenShift CLI plugin to interact with the Compliance Operator."
+LABEL io.openshift.tags="openshift,compliance,security"
+LABEL com.redhat.delivery.appregistry="false"
+LABEL maintainer="Red Hat ISC <isc-team@redhat.com>"
+LABEL License="GPLv2+"
+LABEL name="openshift/oc-compliance"
+LABEL com.redhat.component="oc-compliance-container"
+LABEL io.openshift.maintainer.product="OpenShift Container Platform"
+LABEL io.openshift.maintainer.component="OC Compliance"
+
+RUN microdnf -y install openscap-scanner glibc && microdnf clean all
+
+COPY --from=builder /tmp/oc-compliance/bin/oc-compliance /usr/bin/
+
+WORKDIR /usr/bin
+CMD ["/usr/bin/oc-compliance"]
