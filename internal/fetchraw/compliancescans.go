@@ -101,8 +101,13 @@ func (h *ComplianceScanHelper) Handle() error {
 		return fmt.Errorf("Malformed raw result storage reference. No namespace available. Check the %s object's status", h.kind)
 	}
 
+	rsTolerations, err := h.getRsTolerations(res)
+	if err != nil {
+		return err
+	}
+
 	// Create extractor pod
-	extractorPod := getPVCExtractorPod(res.GetName(), rsnamespace, h.image, claimName)
+	extractorPod := getPVCExtractorPod(res.GetName(), rsnamespace, h.image, claimName, rsTolerations)
 	extractorPod, err = h.kuser.Clientset().CoreV1().Pods(rsnamespace).Create(context.TODO(), extractorPod, metav1.CreateOptions{})
 	if err != nil && !kerrors.IsAlreadyExists(err) {
 		return err
@@ -198,6 +203,50 @@ func (h *ComplianceScanHelper) getResultsStorageRef(obj *unstructured.Unstructur
 	return rs, nil
 }
 
+func (h *ComplianceScanHelper) getRsTolerations(obj *unstructured.Unstructured) ([]corev1.Toleration, error) {
+	rawTolerations, found, err := unstructured.NestedSlice(obj.Object, "spec", "rawResultStorage", "tolerations")
+	if err != nil {
+		return nil, fmt.Errorf("Unable to get rawResultStorage.tolerations of %s/%s of type %s: %s", obj.GetNamespace(), obj.GetName(), "ComplianceScan", err)
+	}
+	if !found {
+		return nil, nil // It's okay if tolerations aren't specified
+	}
+
+	tolerations := make([]corev1.Toleration, 0, len(rawTolerations))
+	for _, rawToleration := range rawTolerations {
+		tolerationMap, ok := rawToleration.(map[string]interface{})
+		if !ok {
+			continue
+		}
+
+		toleration := corev1.Toleration{}
+
+		if key, found := tolerationMap["key"].(string); found {
+			toleration.Key = key
+		}
+
+		if operator, found := tolerationMap["operator"].(string); found {
+			toleration.Operator = corev1.TolerationOperator(operator)
+		}
+
+		if value, found := tolerationMap["value"].(string); found {
+			toleration.Value = value
+		}
+
+		if effect, found := tolerationMap["effect"].(string); found {
+			toleration.Effect = corev1.TaintEffect(effect)
+		}
+
+		if seconds, found := tolerationMap["tolerationSeconds"].(int64); found {
+			toleration.TolerationSeconds = &seconds
+		}
+
+		tolerations = append(tolerations, toleration)
+	}
+
+	return tolerations, nil
+}
+
 func (h *ComplianceScanHelper) waitForExtractorPod(ns, objName, generatedPodName string) error {
 	opts := metav1.GetOptions{}
 	// retry and ignore errors until timeout
@@ -291,9 +340,19 @@ func getPVCExtractorPodLabels(objName string) map[string]string {
 	}
 }
 
-func getPVCExtractorPod(objName, ns, image, claimName string) *corev1.Pod {
+func getPVCExtractorPod(objName, ns, image, claimName string, tolerations []corev1.Toleration) *corev1.Pod {
 	bFalse := false
 	bTrue := true
+
+	if tolerations == nil || len(tolerations) == 0 {
+		tolerations = []corev1.Toleration{
+			{
+				Effect:   corev1.TaintEffectNoSchedule,
+				Key:      "node-role.kubernetes.io/master",
+				Operator: corev1.TolerationOpExists,
+			},
+		}
+	}
 
 	return &corev1.Pod{
 		TypeMeta: metav1.TypeMeta{
@@ -332,13 +391,7 @@ func getPVCExtractorPod(objName, ns, image, claimName string) *corev1.Pod {
 					},
 				},
 			},
-			Tolerations: []corev1.Toleration{
-				{
-					Effect:   corev1.TaintEffectNoSchedule,
-					Key:      "node-role.kubernetes.io/master",
-					Operator: corev1.TolerationOpExists,
-				},
-			},
+			Tolerations: tolerations,
 			Volumes: []corev1.Volume{
 				{
 					Name: "raw-results-vol",
