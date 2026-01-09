@@ -13,6 +13,7 @@ import (
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
@@ -214,33 +215,13 @@ func (h *ComplianceScanHelper) getRsTolerations(obj *unstructured.Unstructured) 
 
 	tolerations := make([]corev1.Toleration, 0, len(rawTolerations))
 	for _, rawToleration := range rawTolerations {
-		tolerationMap, ok := rawToleration.(map[string]interface{})
-		if !ok {
-			continue
+		var toleration corev1.Toleration
+		if err := runtime.DefaultUnstructuredConverter.FromUnstructured(
+			rawToleration.(map[string]interface{}),
+			&toleration,
+		); err != nil {
+			return nil, fmt.Errorf("failed to convert toleration: %w", err)
 		}
-
-		toleration := corev1.Toleration{}
-
-		if key, found := tolerationMap["key"].(string); found {
-			toleration.Key = key
-		}
-
-		if operator, found := tolerationMap["operator"].(string); found {
-			toleration.Operator = corev1.TolerationOperator(operator)
-		}
-
-		if value, found := tolerationMap["value"].(string); found {
-			toleration.Value = value
-		}
-
-		if effect, found := tolerationMap["effect"].(string); found {
-			toleration.Effect = corev1.TaintEffect(effect)
-		}
-
-		if seconds, found := tolerationMap["tolerationSeconds"].(int64); found {
-			toleration.TolerationSeconds = &seconds
-		}
-
 		tolerations = append(tolerations, toleration)
 	}
 
