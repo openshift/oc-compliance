@@ -6,6 +6,48 @@ This is an `oc` plugin that is meant to be used with the
 
 It's a set of utilities that make it easier to use the operator.
 
+## Installation
+
+`oc-compliance` is an `oc` plugin. To be discovered by `oc`, the binary must:
+
+- Be named `oc-compliance`
+- Be executable
+- Be located in a directory present in `$PATH`
+
+A prebuilt binary can be extracted from the container image:
+
+```bash
+mkdir -p ~/bin
+
+podman run --rm \
+  -v ~/bin:/mnt/out:Z \
+  registry.redhat.io/compliance/oc-compliance-rhel8:stable \
+  /bin/cp /usr/bin/oc-compliance /mnt/out/
+
+chmod +x ~/bin/oc-compliance
+```
+
+Ensure `~/bin` is on your `$PATH`, then verify:
+
+```bash
+oc plugin list
+oc compliance -h
+```
+
+### macOS / Apple Silicon
+
+The container image is currently published for `linux/amd64` only.  
+Build it and add it to 
+
+```bash
+brew install go
+make build
+cp ./bin/oc-compliance /opt/homebrew/bin
+chmod +x /opt/homebrew/bin/oc-compliance
+
+```
+
+
 Subcommands
 -----------
 
